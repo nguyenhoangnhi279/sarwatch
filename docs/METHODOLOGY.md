@@ -374,10 +374,4 @@ Dòng ghi công DEM được giữ nguyên ngôn ngữ gốc:
 - Ayzel và cộng sự (2019), tham khảo đánh giá dự báo mưa: [DOI: 10.5194/gmd-12-1387-2019](https://doi.org/10.5194/gmd-12-1387-2019).
 - Pulkkinen và cộng sự (2019), Pysteps: [DOI: 10.5194/gmd-12-4185-2019](https://doi.org/10.5194/gmd-12-4185-2019).
 
-Các công trình là cơ sở phương pháp, không cung cấp chỉ số thay cho SARWatch. Nghiên cứu chưa triển khai FSS/Brier và không suy ra kỹ năng dự báo 5/12 giờ từ các bài báo dự báo ngắn hạn.
-
-### 10.3. Bối cảnh sự kiện và bài thi
-
-- [Bản tin cảnh báo lũ tại Huế ngày 28/10](https://kttv.gov.vn/kttv/vi-VN/1/tin-canh-bao-lu-tren-cac-song-o-thanh-pho-hue-post55756.html): bối cảnh, không chứng minh trạng thái từng vùng lúc NISAR chụp ngày 27/10.
-- [Phản ánh tại cầu Duy Tân](https://tuongtac.hue.gov.vn/phan-anh/kien-nghi-co-phuong-an-de-dong-chay-duoc-luu-thong-tai-cau-duy-tan-lan-2-a243838.html): không chuyển thành nhãn ngập theo thời điểm radar.
-- [Dancing with the SARs — NASA Space Apps 2026](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/): bài thi dự án hướng tới. Trong lần rà soát trước, trang chính không truy cập được; nội dung được đối chiếu qua [bản đăng lại](https://hackathlone.com/challenges/dancing-with-the-sars). Tác giả cần kiểm tra biểu mẫu/quy định hiện hành; tài liệu này chưa xác nhận toàn bộ điều kiện nộp bài.
+Các công trình là cơ sở phương pháp, không cung cấp chỉ số thay cho SARWatch.
