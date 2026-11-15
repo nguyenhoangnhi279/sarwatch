@@ -1,0 +1,20 @@
+{
+  "name": "sarwatch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scientific tooling for the SARWatch HTML application",
+  "scripts": {
+    "test:ui": "node tests/test_dashboard.cjs && node tests/test_forecast_ui.cjs",
+    "data:auxiliary": "node tools/collect_auxiliary.mjs"
+  },
+  "dependencies": {
+    "geotiff": "2.1.3"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "Apache-2.0"
+}

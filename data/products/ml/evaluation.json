@@ -1,0 +1,127 @@
+{
+  "task": "open_water_proxy_agreement_NOT_flood_accuracy",
+  "seed": 42,
+  "sklearn_version": "1.8.0",
+  "raw_radar_sha256": {
+    "before_HH": "832a54422f725f95558ec33866013617db61bbc05a8372f0062107bbf8cc85a8",
+    "before_HV": "599b0707d587e108dec260731d047bdcafbad2f3b6af93d18465599e93cba94c",
+    "after_HH": "064aa82c37f8a19720efa44ae0a81256f1622f02a77d07d259451c1517ec8945",
+    "after_HV": "5dc7748e68f049c304b2bd3b92c7c4aa7ae8f41e222c168acfc4ad47f2f4fa1d"
+  },
+  "reference_scl_sha256": {
+    "16": "2faa3187d872161db3b2f63bf34b60f915897977209ce3d2bb4e0b16458e0f7c",
+    "26": "fe4f107a50c6370c424e9bcfd59db287f433b87ddb59e103b081fa8dcb672fde"
+  },
+  "features": [
+    "filtered_HH_dB",
+    "filtered_HV_dB",
+    "HH_minus_HV_dB"
+  ],
+  "proxy": "Sentinel-2 SCL 6 versus 4/5; other classes excluded with 60 m boundary buffer",
+  "split": "2 km geographic blocks; same split both dates; exclude 100 m block borders",
+  "sample_counts": {
+    "train": 120000,
+    "validation": 100000,
+    "test": 100000
+  },
+  "dates": [
+    {
+      "nisar": "before",
+      "sentinel2_day": "16",
+      "usable_pixels": 1705453,
+      "water_pixels": 547006
+    },
+    {
+      "nisar": "after",
+      "sentinel2_day": "26",
+      "usable_pixels": 1519198,
+      "water_pixels": 390147
+    }
+  ],
+  "spatial_block_counts": {
+    "train": 175,
+    "validation": 53,
+    "test": 68
+  },
+  "per_date_test": {
+    "before": {
+      "samples": 53234,
+      "water_samples": 13107,
+      "tp": 12180,
+      "fp": 1113,
+      "fn": 927,
+      "tn": 39014,
+      "precision": 0.9162717219589257,
+      "recall": 0.9292744335088121,
+      "f1": 0.9227272727272727,
+      "iou": 0.8565400843881856
+    },
+    "after": {
+      "samples": 46766,
+      "water_samples": 9568,
+      "tp": 8734,
+      "fp": 2696,
+      "fn": 834,
+      "tn": 34502,
+      "precision": 0.7641294838145232,
+      "recall": 0.9128344481605352,
+      "f1": 0.8318887513096486,
+      "iou": 0.7121656881930855
+    }
+  },
+  "bootstrap_95": {
+    "method": "1000 paired resamples of held-out 2 km blocks, seed 2026; descriptive, within-case only",
+    "rf_iou": [
+      0.69313062321569,
+      0.8619721386813928
+    ],
+    "otsu_iou": [
+      0.6390905519668426,
+      0.8243344975235888
+    ],
+    "iou_difference": [
+      0.018592049897795684,
+      0.07105543268006605
+    ]
+  },
+  "threshold_selection": "maximum validation IoU on fixed 0.10:0.05:0.90 grid",
+  "threshold": 0.6000000000000002,
+  "baseline_train_otsu_db": -10.798328399658203,
+  "test_random_forest": {
+    "samples": 100000,
+    "water_samples": 22675,
+    "tp": 20914,
+    "fp": 3809,
+    "fn": 1761,
+    "tn": 73516,
+    "precision": 0.8459329369413097,
+    "recall": 0.9223373759647189,
+    "f1": 0.8824844930165829,
+    "iou": 0.7896843377133363
+  },
+  "test_otsu": {
+    "samples": 100000,
+    "water_samples": 22675,
+    "tp": 20489,
+    "fp": 4709,
+    "fn": 2186,
+    "tn": 72616,
+    "precision": 0.8131200888959441,
+    "recall": 0.9035942668136715,
+    "f1": 0.8559730954817956,
+    "iou": 0.7482106339468303
+  },
+  "feature_importance": {
+    "HH": 0.469651918627909,
+    "HV": 0.49516823447103353,
+    "HH-HV": 0.035179846901057465
+  },
+  "limitations": [
+    "Not independent flood ground truth; SCL is an automated weak label.",
+    "Reference timing differs by +16.2 and -31.8 hours from NISAR.",
+    "One small AOI and two dates; not generalization to new events.",
+    "Pixel counts are not independent observations; water labels include coastal/open water.",
+    "Class-balanced model scores are not calibrated flood probabilities.",
+    "Do not replace candidate polygons or operational warnings with this experiment."
+  ]
+}

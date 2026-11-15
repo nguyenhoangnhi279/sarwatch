@@ -1,0 +1,67 @@
+{
+  "created_utc": "2026-11-15T09:40:14.264346+00:00",
+  "status": "unvalidated_rerun",
+  "raw_sha256": {
+    "before_HH": "832a54422f725f95558ec33866013617db61bbc05a8372f0062107bbf8cc85a8",
+    "before_HV": "599b0707d587e108dec260731d047bdcafbad2f3b6af93d18465599e93cba94c",
+    "after_HH": "064aa82c37f8a19720efa44ae0a81256f1622f02a77d07d259451c1517ec8945",
+    "after_HV": "5dc7748e68f049c304b2bd3b92c7c4aa7ae8f41e222c168acfc4ad47f2f4fa1d"
+  },
+  "crs": "EPSG:32648",
+  "shape": [
+    3361,
+    3247
+  ],
+  "pixel_area_m2": 100.0,
+  "valid_pixels": 10634303,
+  "valid_percent": 97.4447014326822,
+  "filter": {
+    "size": 5,
+    "domain": "linear power",
+    "minimum_support": 0.8,
+    "boundary": "constant missing",
+    "invalid_centre_preserved": true
+  },
+  "otsu_pooled_hh_db": -10.848766326904297,
+  "delta_db": {
+    "HH": {
+      "p05": -2.2222220420837404,
+      "median": -0.5704631805419922,
+      "p95": 1.2810162544250492
+    },
+    "HV": {
+      "p05": -1.9971232414245605,
+      "median": -0.3594322204589844,
+      "p95": 1.1511554718017578
+    }
+  },
+  "settings": [
+    {
+      "setting": "loose",
+      "hh_limit_db": -1.0,
+      "hv_limit_db": -0.5,
+      "pixels": 136731,
+      "area_km2": 13.6731
+    },
+    {
+      "setting": "middle",
+      "hh_limit_db": -1.5,
+      "hv_limit_db": -0.75,
+      "pixels": 105433,
+      "area_km2": 10.5433
+    },
+    {
+      "setting": "strict",
+      "hh_limit_db": -2.0,
+      "hv_limit_db": -1.0,
+      "pixels": 74782,
+      "area_km2": 7.4782
+    }
+  ],
+  "differences_from_original": [
+    "Explicit conservative filter support and 8-connected patches.",
+    "JRC/DEM screening is separate: screen_radar.py uses newly documented public subsets.",
+    "Different processing-maturity scenes; no assumed radiometric correction.",
+    "Do not replace the published case or claim replication of 9.3045 km2."
+  ]
+}

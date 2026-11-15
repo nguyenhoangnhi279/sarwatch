@@ -1,0 +1,10 @@
+{
+  "task": "product_agreement_NOT_flood_accuracy",
+  "original_pixels": 93045,
+  "rerun_pixels": 93809,
+  "common_intersection_pixels": 88307,
+  "common_union_pixels": 98547,
+  "jaccard": 0.8960901904674927,
+  "original_pixels_without_rerun_coverage": 0,
+  "interpretation": "Different documented threshold/support/connectivity and new auxiliary subsets; not independent validation."
+}

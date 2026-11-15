@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174f46">
+  <meta name="description" content="SARWatch — Đối chiếu dấu hiệu ngập tại Huế bằng radar, ảnh vệ tinh và dữ liệu dân cư.">
+  <title>SARWatch — Quan sát ngập tại Huế</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./fonts.css">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./weather-context.css">
+  <link rel="stylesheet" href="./review.css">
+  <link rel="stylesheet" href="./dashboard.css">
+  <script src="./analysis-data.js" defer></script>
+  <script src="./impact-data.js" defer></script>
+  <script src="./reference-data.js" defer></script>
+  <script src="./app.js" defer></script>
+  <script src="./reference.js" defer></script>
+  <script src="./review.js" defer></script>
+  <script src="./forecast.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Đến nội dung chính</a>
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+ <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5"/></symbol>
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+ <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+ <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8Zm-9 10 9 5 9-5M3 18l9 4 9-4"/></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+ <symbol id="i-cross" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+ <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10v7m0-11v1"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+</svg>
+
+<header class="header">
+ <a class="brand" href="#ban-do" aria-label="SARWatch — trang bản đồ">
+  <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+  <span>SARWatch<span class="brand-sub">Huế · Dữ liệu vệ tinh</span></span>
+ </a>
+ <nav class="navigation" aria-label="Điều hướng chính">
+  <a href="#ban-do" data-nav="ban-do" class="active" aria-current="page">Bản đồ</a>
+  <a href="#du-bao" data-nav="du-bao">Dự báo mưa</a>
+  <a href="#phuong-phap" data-nav="phuong-phap">Về dữ liệu</a>
+ </nav>
+ <div class="header-actions"><span class="location-label"><span class="location-dot"></span>Huế, Việt Nam</span></div>
+</header>
+
+<main id="main">
+ <section class="page-intro">
+  <div><p class="eyebrow" id="page-eyebrow">QUAN SÁT VỆ TINH · HUẾ</p><h1 id="page-title">Kiểm tra dấu hiệu ngập tại Huế</h1><p class="intro-description" id="page-description">So sánh radar với ảnh vệ tinh và dữ liệu dân cư.</p></div>
+  <div class="observation-status"><span class="status-label"><span class="status-dot"></span>HỒ SƠ QUAN SÁT</span><span id="observation-period">Đang nạp thời gian quan sát</span><span class="observation-orbit">L-band SAR · Track 047 / Frame 080</span></div>
+ </section>
+
+ <div class="notice-bar"><span class="review-pill">Lưu ý</span><p>Vùng đánh dấu chưa được xác nhận ngập.</p><a href="#phuong-phap">Xem cách phân tích ↗</a></div>
+
+ <section id="map-page" class="page-section" aria-label="Bản đồ phân tích">
+  <div class="observation-overview" aria-label="Dấu hiệu và phơi nhiễm">
+<article><span class="overview-index">DẤU HIỆU NƯỚC MỚI</span><div><strong id="overview-area">—</strong><span>km²</span></div><p>Ứng viên sau sàng lọc</p></article>
+<article><span class="overview-index">VỊ TRÍ Lưu ý</span><div><strong id="overview-regions">—</strong><span>vùng</span></div><p>Có thể xem bằng chứng từng vùng</p></article>
+<article><span class="overview-index">DÂN SỐ MÔ HÌNH GIAO VÙNG</span><div><strong id="review-population-total">—</strong></div><p>Ước tính trên phần lưới hợp lệ</p></article>
+<article><span class="overview-index">ĐƯỜNG GIAO VÙNG ỨNG VIÊN</span><div><strong id="review-roads-total">—</strong><span>km</span></div><p>Chưa xác nhận tình trạng lưu thông</p></article>
+</div><p id="review-coverage-note" class="exposure-coverage"></p>
+
+  <div class="workspace-heading"><div><span class="section-number">A.</span><h2>Bản đồ và vùng cần kiểm tra</h2></div><button id="open-review-list" class="button button-small">Danh sách kiểm chứng ↓</button></div>
+
+  <div class="workspace" id="workspace">
+   <aside class="context-panel">
+    <div class="panel-section study-context"><p class="eyebrow">PHẠM VI NGHIÊN CỨU</p><h2>Huế & vùng phụ cận</h2><p>Chỉ phân tích phần ảnh phủ quanh Huế.</p><div class="source-tag">NASA–ISRO NISAR <span>L2 GCOV</span></div></div>
+    <div class="panel-section metric-section"><p class="metric-label">Diện tích ứng viên sau sàng lọc</p><p class="main-metric"><span id="screened-area">—</span><span class="metric-unit">km²</span></p><div class="metric-foot"><span class="candidate-dot"></span>Đã đối chiếu chéo · chưa xác nhận ngập</div><div class="mini-stats"><div><span>Trước sàng lọc</span><strong id="initial-area">—</strong></div><div><span>Vùng trên bản đồ</span><strong id="region-count">—</strong></div></div></div>
+    <div class="panel-section region-section"><div class="section-heading"><h3>Vị trí cần xem trước</h3><span id="list-count" class="quiet-label">Chưa có dữ liệu</span></div><label class="search-field"><svg class="icon"><use href="#i-search"/></svg><input type="search" id="region-search" placeholder="Tìm theo mã vùng…" aria-label="Tìm theo mã vùng" disabled></label><div class="list-toolbar"><span>Vùng ứng viên</span><select id="region-sort" aria-label="Sắp xếp vùng" disabled><option value="priority">Ưu tiên kiểm chứng</option><option value="large">Diện tích lớn trước</option><option value="small">Diện tích nhỏ trước</option></select></div><div id="region-list" class="region-list"><div class="list-empty">Các vùng ứng viên được nạp tự động từ phân tích đã công bố.</div></div><button id="more-regions" class="text-button" hidden>Xem thêm vùng</button></div>
+    <div class="panel-section panel-bottom"><svg class="icon"><use href="#i-info"/></svg><p>Chọn một vùng trên bản đồ để xem diện tích và vị trí.</p></div>
+   </aside>
+
+   <div class="map-column">
+    <div class="map-topbar"><div class="segmented" role="group" aria-label="Quan sát radar"><button data-date="before" aria-pressed="false" disabled>Ảnh trước <span class="date-before">—</span></button><button data-date="after" class="selected" aria-pressed="true" disabled>Ảnh sau <span class="date-after">—</span></button><button data-date="compare" aria-pressed="false" disabled>So sánh</button></div><button id="layers-toggle" class="button button-small" aria-expanded="false" aria-controls="layers-panel"><svg class="icon"><use href="#i-layers"/></svg>Lớp bản đồ</button></div>
+    <div class="map-viewport" id="map-viewport">
+     <svg id="map-svg" role="img" aria-label="Bản đồ radar và vùng ứng viên, có thể thu phóng và di chuyển" viewBox="0 0 1000 650" preserveAspectRatio="none">
+      <defs><clipPath id="before-clip"><rect id="before-clip-rect" x="0" y="0" width="0" height="0"/></clipPath></defs>
+      <g id="tile-layer"></g><g id="radar-layer"><image id="radar-after"/><image id="radar-before" clip-path="url(#before-clip)"/></g><g id="population-layer"></g><g id="polygon-layer"></g><g id="road-layer"></g><g id="facility-layer"></g>
+     </svg>
+     <div class="map-empty" id="map-empty"><h2>Đang nạp quan sát NISAR tại Huế…</h2><p>Dữ liệu được hệ thống cung cấp sẵn. Nếu bản đồ không xuất hiện, thử mở lại bằng start.bat.</p></div>
+     <div id="layers-panel" class="floating-panel layers-panel" hidden><div class="section-heading"><h3>Hiển thị bản đồ</h3><button id="layers-close" class="icon-button" aria-label="Đóng lớp bản đồ"><svg class="icon"><use href="#i-cross"/></svg></button></div><label class="check-row"><input type="checkbox" id="show-radar" checked>Ảnh radar NISAR</label><label class="check-row"><input type="checkbox" id="show-candidates" checked>Vùng ứng viên sau sàng lọc</label><label class="check-row"><input type="checkbox" id="show-basemap">Ảnh nền tham chiếu Esri</label><label class="check-row"><input type="checkbox" id="show-population">Ô dân số giao vùng ứng viên</label><label class="check-row"><input type="checkbox" id="show-roads" checked>Đường giao vùng ứng viên</label><label class="check-row"><input type="checkbox" id="show-facilities">Cơ sở thiết yếu lân cận</label><label class="range-label" for="radar-opacity">Độ hiển thị ảnh radar <output id="opacity-value">100%</output></label><input id="radar-opacity" type="range" min="0" max="100" value="100"><p class="control-note">Ảnh nền khác thời điểm quan sát, không dùng để xác nhận ngập.</p></div>
+     <div class="map-zoom"><button id="zoom-in" aria-label="Phóng to" disabled>+</button><button id="zoom-out" aria-label="Thu nhỏ" disabled>−</button><button id="fit-map" aria-label="Về toàn bộ vùng dữ liệu" disabled><svg class="icon"><use href="#i-target"/></svg></button></div>
+     <div class="map-legend" id="map-legend" hidden><span class="legend-mark"></span>Ứng viên chưa kiểm chứng</div><div class="north-indicator" id="north-indicator" hidden><span>↑</span>N</div>
+     <div class="map-scale" id="map-scale" hidden><span></span><small></small></div>
+     <div class="map-coordinates" id="map-coordinates" hidden></div><div class="basemap-attribution" id="basemap-attribution" hidden>Tiles © Esri & imagery contributors</div><div id="map-tooltip" class="map-tooltip" role="tooltip" hidden></div>
+     <aside id="region-detail" class="floating-panel region-detail" aria-label="Thông tin vùng được chọn" hidden><div class="section-heading"><span class="eyebrow">VÙNG ĐƯỢC CHỌN</span><button id="detail-close" class="icon-button" aria-label="Đóng thông tin vùng"><svg class="icon"><use href="#i-cross"/></svg></button></div><h3 id="detail-title">Vùng</h3><span class="candidate-label">Ứng viên · Chưa kiểm chứng</span><dl><div><dt>Diện tích polygon</dt><dd id="detail-area"></dd></div><div><dt>Điểm gợi ý kiểm tra</dt><dd id="detail-coordinates"></dd></div><div><dt>Ngày quan sát sau</dt><dd id="detail-date"></dd></div></dl><p>Đây là vùng thuật toán lựa chọn, chưa xác nhận ngập hoặc thiệt hại thực tế.</p><dl class="detail-exposure"><div><dt>Tham chiếu quang học</dt><dd id="detail-reference">—</dd></div><div><dt>Thứ tự xem</dt><dd id="detail-priority">—</dd></div><div><dt>Dân số mô hình giao vùng</dt><dd id="detail-population">—</dd></div><div><dt>Đường giao cắt</dt><dd id="detail-road-length">—</dd></div></dl><button id="detail-review" class="button button-primary">Xem hồ sơ kiểm chứng ↗</button><button id="detail-download" class="button button-small"><svg class="icon"><use href="#i-download"/></svg>Tải vùng này</button></aside>
+    </div>
+    <div id="comparison-control" class="comparison-control" hidden><span>Ảnh trước <b class="date-before"></b></span><input id="comparison-slider" type="range" min="0" max="100" value="50" aria-label="Vị trí chia ảnh trước và sau"><span>Ảnh sau <b class="date-after"></b></span></div>
+    <div class="map-bottom"><span id="map-caption">Ảnh radar và lớp ứng viên sẽ xuất hiện sau khi nhập dữ liệu.</span><button class="text-button download-trigger" data-download="candidates.geojson" disabled><svg class="icon"><use href="#i-download"/></svg>Tải bản đồ</button></div>
+   </div>
+  </div>
+ </section>
+
+  
+<section id="reference-summary-page"><details class="reference-disclosure"><summary><span>Đối chiếu Sentinel-2</span><small id="reference-toggle-note"></small></summary><section class="reference-summary" aria-label="Kết quả đối chiếu độc lập"><div><span class="eyebrow">ĐỐI CHIẾU CHÉO ĐÃ THỰC HIỆN</span><h3>Kết quả đối chiếu Sentinel-2</h3><p id="reference-result-summary"></p></div><div class="reference-counters"><div><strong id="reference-clear-count">—</strong><span>vùng có phần ảnh rõ</span></div><div><strong id="reference-new-count">—</strong><span>vùng có phần giao nước mới</span></div><div><strong id="reference-obscured-count">—</strong><span>vùng chưa có phần ảnh đủ rõ</span></div></div><p id="reference-conclusion"></p><p class="reference-time-note">Ảnh trước lệch +16,2 giờ; ảnh sau lệch −31,8 giờ so với NISAR. Đối chiếu quang học tự động chưa phải nhãn ngập thực địa.</p></section></details></section>
+<section id="review-workspace" class="review-workspace" aria-labelledby="review-title">
+ <div class="review-heading"><div><p class="eyebrow">TỪ QUAN SÁT ĐẾN HÀNH ĐỘNG</p><h2 id="review-title">Danh sách cần kiểm tra</h2><p>Sắp xếp theo dân cư và hạ tầng trong vùng ứng viên.</p></div><button id="review-export" class="button button-primary">Tải danh sách kiểm tra ↓</button></div>
+ <div class="review-order"><strong>Cách sắp xếp</strong><span>Cơ sở thiết yếu giao vùng → dân số mô hình → đường giao cắt → diện tích.</span><small>Đây là thứ tự xem xét, không phải dự báo mức nguy hiểm.</small></div>
+ <div class="review-columns"><div class="review-list-panel"><div class="review-list-tools"><label><span>Tìm vị trí</span><input id="review-search" type="search" placeholder="Mã vùng hoặc tên đường"></label><label><span>Lọc tham chiếu</span><select id="review-filter"><option value="all">Tất cả vị trí</option><option value="optical_overlap">Có phần giao nước mới</option><option value="optical_obscured">Tham chiếu chưa rõ</option></select></label></div>
+ <div class="review-list-caption"><span id="review-results">—</span></div>
+ <div class="review-table-scroll"><table class="review-table"><thead><tr><th>Ưu tiên</th><th>Vị trí</th><th>Dân số mô hình</th><th>Đường giao cắt</th><th>Tham chiếu Sentinel-2</th></tr></thead><tbody id="review-table-body"></tbody></table></div><button id="review-more" class="text-button">Xem thêm vị trí ↓</button>
+ </div><aside class="review-record"><div id="review-selection-empty"><span class="eyebrow">HỒ SƠ VỊ TRÍ</span><h3>Chọn vị trí</h3><p>Bấm vào bản đồ hoặc một dòng trong danh sách.</p></div>
+ <div id="review-selection" hidden><div class="review-record-heading"><h3 id="review-selected-title"></h3><span id="review-selected-rank"></span></div><p id="review-reason" class="review-reason"></p><p id="review-coordinates" class="review-coordinates"></p><button id="review-compare" class="button">Đối chiếu ảnh trước / sau ↗</button><p id="review-population-note" class="review-small"></p>
+ <details class="review-nearby"><summary>Cơ sở được ghi nhận trong phạm vi 500 m</summary><ul id="review-nearby"></ul><p>Các cơ sở lân cận chưa được xác định bị ngập. OSM có thể chưa đầy đủ.</p></details>
+ <section id="reference-selected" class="reference-selected" hidden><h4>Ảnh Sentinel-2 đối chiếu</h4><span id="reference-selected-status" class="reference-status"></span><p id="reference-selected-detail"></p><div class="reference-pair"><figure><canvas id="reference-before" width="280" height="280" role="img" aria-label="Ảnh Sentinel-2 ngày 16 tháng 10 quanh vùng đã chọn"></canvas><figcaption>Sentinel-2 · 16/10/2026</figcaption></figure><figure><canvas id="reference-after" width="280" height="280" role="img" aria-label="Ảnh Sentinel-2 ngày 26 tháng 10 quanh vùng đã chọn"></canvas><figcaption>Sentinel-2 · 26/10/2026</figcaption></figure></div><p>Viền vàng là vùng ứng viên NISAR. Ảnh khác giờ; mây, bóng và phần chưa phân loại không được dùng để kết luận.</p></section></div>
+ </aside></div><p id="review-source-summary" class="review-source-summary"></p>
+</section>
+
+<section id="evidence-page" class="evidence-grid" aria-label="Khám phá dữ liệu quan sát">
+   <article class="observation-story"><div class="section-kicker"><span class="section-number">B.</span><span>ĐỌC THAY ĐỔI QUA HAI THỜI ĐIỂM</span></div><h2>Ảnh radar trước và sau</h2><p>Kéo thanh trượt để so sánh hai ảnh.</p><a class="story-link" href="#so-sanh">Mở thanh so sánh <span>↗</span></a><div class="mini-observations"><a href="#so-sanh"><img id="story-before" alt="Ảnh radar NISAR trước sự kiện ứng viên" loading="lazy"><span>TRƯỚC <b class="date-before">—</b></span></a><a href="#so-sanh"><img id="story-after" alt="Ảnh radar NISAR sau sự kiện ứng viên" loading="lazy"><span>SAU <b class="date-after">—</b></span></a></div></article>
+   <article class="focus-regions"><div class="section-kicker"><span class="section-number">C.</span><span>KHÁM PHÁ KHÔNG GIAN</span></div><div class="focus-heading"><h2>Một số vị trí cần xem</h2><span>Chọn để xem trên bản đồ ↗</span></div><div id="focus-list"></div><div class="focus-note"><span class="candidate-dot"></span>Ưu tiên theo phơi nhiễm ghi nhận; chưa phải mức nguy hiểm.</div></article>
+  </section>
+
+ <details id="analysis-page" class="page-section report-page report-disclosure"><summary><span><b class="section-number">D.</b>Thống kê phân tích</span><small>Sàng lọc và độ nhạy tham số</small></summary>
+  <div class="report-heading"><div><p class="eyebrow">TỪ THAY ĐỔI ĐẾN ỨNG VIÊN</p><h2>Thống kê xử lý</h2><p>So sánh diện tích trước và sau sàng lọc, cùng độ nhạy của các tham số.</p></div><button class="button download-trigger" data-download="report.json" disabled><svg class="icon"><use href="#i-download"/></svg>Tải báo cáo</button></div>
+  <div class="report-empty" id="analysis-empty"><h3>Đang đọc kết quả phân tích…</h3></div>
+  <div id="analysis-content" hidden><div class="analysis-layout"><article class="report-block"><p class="eyebrow">01 / SÀNG LỌC</p><h3>Kết quả sàng lọc</h3><div id="screening-bars" class="screening-bars"></div><p class="small-note">Diện tích loại do nước thường xuyên, địa hình dốc và thiếu dữ liệu.</p></article><article class="report-block"><p class="eyebrow">02 / NGƯỠNG ĐỘ DỐC</p><h3>Ảnh hưởng của ngưỡng độ dốc</h3><div id="slope-table" class="table-wrapper"></div><p class="small-note">Các mức tham số thử nghiệm không phải khoảng tin cậy thống kê.</p></article></div><article class="report-block full-report"><div class="section-heading"><div><p class="eyebrow">03 / NGƯỠNG RADAR</p><h3>Các ngưỡng radar đã thử</h3></div><span class="outline-label">Baseline thử nghiệm</span></div><div id="threshold-table" class="table-wrapper"></div></article></div>
+  <p class="analysis-footnote">Phạm vi và giới hạn phân tích được trình bày tại <a href="#phuong-phap">Phương pháp ↗</a>.</p>
+ </details>
+
+ <section id="weather-page" class="page-section" hidden><div class="panel-head"><div><p class="eyebrow">DỮ LIỆU BỔ SUNG · KHÔNG PHẢI CẢNH BÁO NGẬP</p><h2>Dự báo mưa tại điểm khảo sát</h2></div><div class="tools"><select id="site" aria-label="Điểm dự báo"><option value="hue">Trung tâm Huế</option><option value="northwest">Điểm tây bắc</option><option value="coast">Điểm ven biển</option><option value="south">Điểm phía nam</option></select><button id="refresh" class="primary">Cập nhật</button></div></div>
+<div id="status" class="status" role="status" aria-live="polite">Đang kết nối nguồn dự báo…</div>
+<section class="metrics" aria-label="Lượng mưa dự báo"><article class="metric"><small>TỔNG LƯỢNG MƯA · 5 GIỜ TỚI</small><div class="value"><span id="five">—</span> <span class="unit">mm</span></div><p class="fine">Tích lũy từ thời điểm hiện tại đến 5 giờ sau.</p></article><article class="metric"><small>TỔNG LƯỢNG MƯA · 12 GIỜ TỚI</small><div class="value"><span id="twelve">—</span> <span class="unit">mm</span></div><p class="fine">Dự báo ECMWF IFS qua Open-Meteo.</p></article></section>
+<section class="panel"><div class="panel-head"><div><h2>Diễn biến mưa theo giờ</h2><div id="window" class="fine">Chưa có dữ liệu</div></div><div class="tools" aria-label="Khoảng dự báo"><button data-hours="5" aria-pressed="false">5 giờ</button><button data-hours="12" class="active" aria-pressed="true">12 giờ</button></div></div><div id="chart" class="chart" aria-label="Lượng mưa từng giờ, đơn vị mm"></div><p class="fine">Mỗi cột là tổng mưa một giờ. Tổng 5/12 giờ được chia tỷ lệ ở hai giờ biên.</p><div id="grid" class="fine"></div></section>
+<div class="split"><section class="panel"><div class="eyebrow">THEO DÕI CÁ NHÂN</div><h2>Đặt ngưỡng lượng mưa</h2><label for="watch-threshold">Ngưỡng tổng mưa cho khoảng thời gian đang chọn (mm)</label><input id="watch-threshold" type="number" min="0.1" step="0.1" placeholder="Ví dụ: 30"><p id="watch-result" aria-live="polite">Chưa đủ dữ liệu để đối chiếu.</p><p class="fine">Ngưỡng theo dõi tự chọn, chưa được kiểm định cho ngập tại Huế.</p><a href="https://nchmf.gov.vn/" target="_blank" rel="noopener">Xem bản tin khí tượng thủy văn chính thức ↗</a></section>
+<section class="panel"><div class="eyebrow">MƯA & MẶT NƯỚC</div><h2>Mưa và dấu hiệu ngập</h2><p>Bản đồ radar ghi nhận ngày 15 và 27/10/2026, không dự báo vùng ngập 5–12 giờ tới.</p><p class="fine">Theo dõi thêm mực nước sông và bản tin địa phương. Mưa ít không đủ để kết luận một khu vực an toàn.</p><p id="archive-note" class="fine" hidden></p></section></div>
+
+</section>
+ <section id="method-page" class="page-section method-page" hidden>
+  <div class="challenge-note"><strong>NASA Space Apps 2026 · Dancing with the SARs</strong><p>NISAR là nguồn radar chính. Dự báo mưa được hiển thị riêng.</p></div><div class="method-lead"><p class="eyebrow">BIẾT DỮ LIỆU NÓI GÌ</p><h2>Dữ liệu và cách xử lý</h2><p>So sánh NISAR ngày 15 và 27/10/2026, sau đó đối chiếu với địa hình, dân cư và ảnh quang học.</p></div>
+<!--SCIENCE START-->
+    <section id="science-results" class="science-results" aria-labelledby="science-heading">
+     <details class="science-disclosure"><summary><span>Đánh giá bộ phân loại nước</span><small>Random Forest và Otsu</small></summary><div class="science-heading"><div><p class="eyebrow">THỰC NGHIỆM CÓ THỂ TÁI CHẠY</p><h3 id="science-heading">So sánh với nhãn nước Sentinel-2</h3></div><span class="science-case">Cặp ảnh 15–27/10/2026</span></div>
+     <p>Các chỉ số đo <strong>mức khớp với nhãn nước Sentinel-2</strong>; chưa đo độ chính xác phát hiện lũ.</p>
+     <div class="science-cards"><article><span>F1 · baseline Otsu</span><strong>0,856</strong><progress value="0.8559730954817956" max="1" aria-label="F1 baseline Otsu"></progress></article><article><span>F1 · Random Forest</span><strong>0,882</strong><progress value="0.8824844930165829" max="1" aria-label="F1 Random Forest"></progress></article><article><span>Tập kiểm tra giữ riêng</span><strong>68 <small>khối</small></strong><p>100.000 pixel · khối 2 × 2 km</p></article></div>
+     <details><summary>Thiết lập và giới hạn đánh giá</summary><div class="science-details"><div><table><caption>Mức khớp với nhãn quang học trên cùng tập kiểm tra</caption><thead><tr><th>Chỉ số</th><th>Otsu</th><th>Random Forest</th></tr></thead><tbody><tr><th scope="row">Precision</th><td>0,813</td><td>0,846</td></tr><tr><th scope="row">Recall</th><td>0,904</td><td>0,922</td></tr><tr><th scope="row">F1</th><td>0,856</td><td>0,882</td></tr><tr><th scope="row">IoU</th><td>0,748</td><td>0,790</td></tr></tbody></table><p>Train / validation / test: 175 / 53 / 68 khối, dùng cùng phân chia ở cả hai ngày. Bỏ biên khối 100 m và biên mây 60 m; chọn ngưỡng bằng validation. Số pixel không phải số mẫu độc lập.</p><p>IoU tăng 4.15 điểm phần trăm. Khoảng bootstrap theo khối 95% cho mức tăng: 1.86–7.11 điểm; chỉ mô tả case này.</p></div><div><h4>Khác biệt giữa hai thời điểm</h4><p>F1 riêng ảnh trước / sau: 0,923 / 0,832. Nhãn gồm cả nước ven biển; chưa chứng minh khả năng nhận diện ngập mới hoặc khái quát sang đợt lũ khác.</p><p>Ngay ở lớp thực vật giữ nguyên nhãn quang học, HH vẫn giảm trung vị khoảng 0,72 dB. Độ ẩm, mùa vụ và khác phiên bản xử lý còn lẫn nhau; chưa áp dụng hiệu chỉnh độ lệch.</p><p>Tái chạy với quy tắc lọc được công bố cho 10.5433 km² ứng viên <strong>trước</strong> sàng lọc. Sau sàng lọc bằng JRC/DEM mới tải còn 9.3809 km². Bản đồ Colab gốc 9,3045 km² vẫn được lưu riêng; Jaccard giữa hai sản phẩm là 0,896, không phải điểm chính xác ngập.</p><p>Mô hình này chưa thay thế các vùng ứng viên hoặc trở thành cảnh báo hiện tại.</p></div></div></details>
+    </details></section><!--SCIENCE END-->
+  <div class="method-grid"><article class="report-block"><h3>Các bước xử lý</h3><ol class="pipeline"><li><span>01</span><div><h4>Quan sát qua hai thời điểm</h4><p>NISAR ghi nhận bề mặt Huế ngày 15 và 27/10/2026. Xem hai ảnh cùng vị trí để nhận biết sự thay đổi.</p></div></li><li><span>02</span><div><h4>Tìm vùng có dấu hiệu nước mới</h4><p>So sánh tín hiệu radar, sàng lọc nước thường xuyên và địa hình dốc. Kết quả vẫn là ứng viên cần đối chiếu.</p></div></li><li><span>03</span><div><h4>Đo phần giao với dân cư và đường sá</h4><p>WorldPop 2026 cung cấp dân số mô hình theo ô lưới; OpenStreetMap cung cấp các đối tượng hạ tầng đã được lập bản đồ.</p></div></li><li><span>04</span><div><h4>Sắp xếp vị trí cần xem trước</h4><p>Ưu tiên giao cắt với cơ sở thiết yếu, sau đó theo dân số mô hình, chiều dài đường giao cắt và diện tích.</p></div></li><li><span>05</span><div><h4>Đối chiếu và ghi lại bằng chứng</h4><p>Xem ảnh trước/sau, đối chiếu nguồn tham chiếu và tải danh sách để chuẩn bị kiểm tra. Đã đối chiếu Sentinel-2 16/26-10; chưa có nhãn ngập đúng giờ NISAR.</p></div></li></ol></article><div><article class="report-block limitation-block"><span class="outline-label">Giới hạn cần biết</span><h3>Giới hạn kết quả</h3><ul><li>Scene trước là Provisional, scene sau là Validated. Khác mức xử lý cần kiểm tra tính nhất quán tín hiệu.</li><li>Thay đổi có thể liên quan mặt nước, mùa vụ hoặc điều kiện bề mặt; không thể quy toàn bộ cho lũ.</li><li>Phương pháp này chỉ tìm một dạng tín hiệu nước mở, có thể bỏ sót ngập dưới cây hoặc trong đô thị.</li><li>Phạm vi là khung cắt quanh Huế, không phải toàn bộ thành phố.</li></ul></article><article class="report-block official-block"><svg class="icon"><use href="#i-info"/></svg><div><h3>Thông tin cảnh báo</h3><p>Ứng dụng chưa kết nối bản tin cảnh báo chính thức và không đưa ra chỉ dẫn sơ tán.</p></div></article></div></div>
+
+  <div class="source-heading"><p class="eyebrow">DỮ LIỆU MỞ</p><h3>Nguồn dữ liệu</h3></div><div class="source-grid"><a href="https://hub.worldpop.org/doi/10.5258/SOTON/WP00839" target="_blank" rel="noopener"><span class="source-kind">DÂN SỐ MÔ HÌNH</span><h4>WorldPop 2026 ↗</h4><p>Ước tính người theo ô lưới khoảng 100 m · CC BY 4.0.</p></a><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener"><span class="source-kind">HẠ TẦNG</span><h4>OpenStreetMap ↗</h4><p>© OpenStreetMap contributors · ODbL 1.0. Không xác nhận tình trạng lưu thông.</p></a><a href="https://nisar-docs.asf.alaska.edu/" target="_blank" rel="noopener noreferrer"><span class="source-kind">RADAR</span><h4>NASA–ISRO NISAR <span>↗</span></h4><p>GCOV HH/HV · nguồn quan sát chính.</p></a><a href="https://global-surface-water.appspot.com/download" target="_blank" rel="noopener noreferrer"><span class="source-kind">NƯỚC LỊCH SỬ</span><h4>JRC Global Surface Water <span>↗</span></h4><p>Occurrence v1.5 đến năm 2024 · Source: EC JRC/Google.</p></a><a href="https://registry.opendata.aws/copernicus-dem/" target="_blank" rel="noopener noreferrer"><span class="source-kind">ĐỊA HÌNH</span><h4>Copernicus GLO-30 <span>↗</span></h4><p>Độ dốc từ mô hình bề mặt khoảng 30 m.</p></a></div>
+  
+ </section>
+
+ 
+</main>
+<footer class="data-credit"><p>Produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.</p></footer>
+
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

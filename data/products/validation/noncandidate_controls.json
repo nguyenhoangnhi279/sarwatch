@@ -1,0 +1,102 @@
+{
+  "seed": 42,
+  "sampling": "two per optical stratum, not representative accuracy sampling",
+  "records": [
+    {
+      "id": "stable_water_1",
+      "stratum": "stable_water",
+      "row": 63,
+      "col": 868,
+      "longitude": 107.60851551567774,
+      "latitude": 16.59451926656729,
+      "scl_before": 6,
+      "scl_after": 6,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "stable_water_2",
+      "stratum": "stable_water",
+      "row": 784,
+      "col": 1173,
+      "longitude": 107.66385305248309,
+      "latitude": 16.46358020029049,
+      "scl_before": 6,
+      "scl_after": 6,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "stable_land_1",
+      "stratum": "stable_land",
+      "row": 1133,
+      "col": 851,
+      "longitude": 107.60274424984254,
+      "latitude": 16.401304353799055,
+      "scl_before": 4,
+      "scl_after": 4,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "stable_land_2",
+      "stratum": "stable_land",
+      "row": 1126,
+      "col": 733,
+      "longitude": 107.5806811753805,
+      "latitude": 16.402841076414383,
+      "scl_before": 4,
+      "scl_after": 4,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "optical_new_water_outside_candidates_1",
+      "stratum": "optical_new_water_outside_candidates",
+      "row": 786,
+      "col": 1546,
+      "longitude": 107.73365840274388,
+      "latitude": 16.462319124455977,
+      "scl_before": 4,
+      "scl_after": 6,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "optical_new_water_outside_candidates_2",
+      "stratum": "optical_new_water_outside_candidates",
+      "row": 120,
+      "col": 493,
+      "longitude": 107.53814088901784,
+      "latitude": 16.58509335959942,
+      "scl_before": 5,
+      "scl_after": 6,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "obscured_1",
+      "stratum": "obscured",
+      "row": 120,
+      "col": 1641,
+      "longitude": 107.75314239155121,
+      "latitude": 16.58235889853908,
+      "scl_before": 6,
+      "scl_after": 9,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    },
+    {
+      "id": "obscured_2",
+      "stratum": "obscured",
+      "row": 686,
+      "col": 1367,
+      "longitude": 107.70040779654533,
+      "latitude": 16.48081369318993,
+      "scl_before": 4,
+      "scl_after": 10,
+      "nisar_candidate_at_grid_center": false,
+      "interpretation": "Optical inspection control; not a missed-flood or correct-negative label."
+    }
+  ]
+}

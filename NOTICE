@@ -1,0 +1,22 @@
+SARWatch AI
+Copyright 2026 Nguyen Hoang Y Nhi
+
+Original application source: Apache License 2.0; see LICENSE.
+Third-party datasets and fonts retain their own terms, not Apache 2.0.
+Contains modified NASA-ISRO NISAR data (2026).
+Contains modified Copernicus Sentinel data (2026).
+WorldPop Global2 R2025A v1, 2026: CC BY 4.0,
+https://doi.org/10.5258/SOTON/WP00839
+OpenStreetMap contributors: Open Database License 1.0,
+https://www.openstreetmap.org/copyright
+OSM-derived geometry/data retains ODbL attribution and applicable share-alike terms.
+Be Vietnam Pro: SIL Open Font License 1.1; app/web/fonts/OFL.txt.
+JRC Global Surface Water and Copernicus DEM: see docs/METHODOLOGY.md#sources and source terms.
+Open-Meteo / ECMWF: weather context, CC BY 4.0.
+Optional Esri imagery: remotely served reference basemap under provider terms;
+not distributed in this bundle, not used as flood-event ground truth.
+
+This is a research prototype. NASA and other source organizations do not endorse it.
+
+Produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
+Source: EC JRC/Google.

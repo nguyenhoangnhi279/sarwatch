@@ -1,0 +1,33 @@
+{
+  "status": "unvalidated_rerun_separate_from_published_case",
+  "initial_pixels": 105433,
+  "missing_auxiliary_pixels": 0,
+  "historical_water_removed": 434,
+  "slope_removed_excluding_water": 11190,
+  "sensitivity": [
+    {
+      "water_occurrence_limit": 90,
+      "slope_limit_deg": 3,
+      "pixels": 87184,
+      "area_km2": 8.7184
+    },
+    {
+      "water_occurrence_limit": 90,
+      "slope_limit_deg": 5,
+      "pixels": 93809,
+      "area_km2": 9.3809
+    },
+    {
+      "water_occurrence_limit": 90,
+      "slope_limit_deg": 10,
+      "pixels": 101870,
+      "area_km2": 10.187000000000001
+    }
+  ],
+  "method": "JRC v1.5 nearest; DEM bilinear to 30 m UTM, gradient slope degrees, bilinear slope to 10 m; no post-screen size pruning.",
+  "source_metadata": [
+    "data/inputs/auxiliary/dem_source_crop.json",
+    "data/inputs/auxiliary/jrc_source_crop.json"
+  ],
+  "limitation": "New public subsets retrieved 2026-11-15; not exact original Colab auxiliary files. No flood confirmation."
+}

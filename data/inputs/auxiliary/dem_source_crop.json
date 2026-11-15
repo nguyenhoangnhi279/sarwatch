@@ -1,0 +1,24 @@
+{
+  "source": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N16_00_E107_00_DEM/Copernicus_DSM_COG_10_N16_00_E107_00_DEM.tif",
+  "window": [
+    1583,
+    1404,
+    2737,
+    2557
+  ],
+  "width": 1154,
+  "height": 1153,
+  "dtype": "Float32Array",
+  "transform": [
+    0.0002777777777777778,
+    0,
+    107.43958333333333,
+    0,
+    -0.0002777777777777778,
+    16.610138888888887
+  ],
+  "crs": "EPSG:4326",
+  "nodata": null,
+  "retrieved_at": "2026-11-15T05:22:44.368Z",
+  "pixel_registration": "Source PixelIsPoint: converted tiepoint centres to PixelIsArea outer-corner affine."
+}

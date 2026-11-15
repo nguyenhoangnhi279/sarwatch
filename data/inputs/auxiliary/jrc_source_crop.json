@@ -1,0 +1,24 @@
+{
+  "source": "https://s3.waw4-1.cloudferro.com/swift/v1/global-surface-water/download2024/Aggregated/VER1-5/occurrence/occurrence_100E_20N_v1_5_2024.tif",
+  "window": [
+    29759,
+    13559,
+    31040,
+    14840
+  ],
+  "width": 1281,
+  "height": 1281,
+  "dtype": "Uint8Array",
+  "transform": [
+    0.00025,
+    0,
+    107.43975000000017,
+    0,
+    -0.00025,
+    16.610249999999958
+  ],
+  "crs": "EPSG:4326",
+  "nodata": null,
+  "retrieved_at": "2026-11-15T05:22:46.305Z",
+  "pixel_registration": "Source PixelIsArea: affine preserves outer corner."
+}

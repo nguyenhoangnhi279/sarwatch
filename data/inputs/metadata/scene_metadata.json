@@ -1,0 +1,53 @@
+{
+  "search_point_lon_lat": [
+    107.59,
+    16.46
+  ],
+  "track": 47,
+  "frame": 80,
+  "orbit_direction": "Descending",
+  "mode": "4005",
+  "polarization_from_filename": "DHDH; HH/HV expected, verify in HDF5",
+  "scenes": [
+    {
+      "role": "before_candidate",
+      "granule_id": "NISAR_L2_PR_GCOV_033_047_D_080_4005_DHDH_A_20261015T112140_20261015T112214_P05023_N_F_J_001",
+      "collection": "NISAR_L2_GCOV_PROVISIONAL_V1",
+      "collection_concept_id": "C2854338529-ASF",
+      "granule_concept_id": "G4372302369-ASF",
+      "start_utc": "2026-10-15T11:21:40Z",
+      "end_utc": "2026-10-15T11:22:14Z",
+      "maturity": "PROVISIONAL",
+      "earthdata_url": "https://search.earthdata.nasa.gov/search/granules?p=C2854338529-ASF&g=G4372302369-ASF",
+      "verification": "Confirmed in Earthdata Search results at point 107.59 E, 16.46 N; HDF5 contents and processing metadata not inspected."
+    },
+    {
+      "role": "event_candidate",
+      "granule_id": "NISAR_L2_PR_GCOV_034_047_D_080_4005_DHDH_A_20261027T112140_20261027T112215_P05036_N_F_J_001",
+      "collection": "NISAR_L2_GCOV_V1",
+      "collection_concept_id": "C3622241360-ASF",
+      "granule_concept_id": "G4406688609-ASF",
+      "start_utc": "2026-10-27T11:21:40Z",
+      "end_utc": "2026-10-27T11:22:15Z",
+      "maturity": "VALIDATED",
+      "earthdata_url": "https://search.earthdata.nasa.gov/search/granules?p=C3622241360-ASF&g=G4406688609-ASF",
+      "verification": "Confirmed in Earthdata Search results at point 107.59 E, 16.46 N; HDF5 contents and processing metadata not inspected."
+    }
+  ],
+  "data_downloaded": true,
+  "limitations": [
+    "Point intersection does not establish full Hue coverage.",
+    "Different maturity collections and filename processing versions require radiometric checks.",
+    "Event candidate has not been independently confirmed to show flooding."
+  ],
+  "raw_rasters_present_locally": false,
+  "published_analysis": {
+    "source": "User-provided Colab export sarwatch_demo_bundle.zip",
+    "bundle_path": "data/products/sarwatch_demo_bundle.zip",
+    "status": "unvalidated",
+    "screened_candidate_area_km2": 9.3045,
+    "polygon_count": 1646,
+    "version": "aa7948379b0991c9",
+    "inspection": "Export validated locally; original HDF5 and independent flood labels not inspected."
+  }
+}

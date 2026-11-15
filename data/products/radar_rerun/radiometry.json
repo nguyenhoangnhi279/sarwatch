@@ -1,0 +1,66 @@
+{
+  "method": "Persistent SCL classes, 60 m cloud/invalid buffer, NISAR 10 m grid",
+  "interpretation": "Persistent optical class does not guarantee unchanged radar scattering. Seasonality, moisture, wind and processing differences remain confounded; no automatic correction.",
+  "records": [
+    {
+      "group": "persistent_vegetation",
+      "channel": "HH",
+      "pixels": 3865810,
+      "delta_p05_median_p95_db": [
+        -2.160974383354187,
+        -0.7233965396881104,
+        0.5410902500152579
+      ]
+    },
+    {
+      "group": "persistent_vegetation",
+      "channel": "HV",
+      "pixels": 3865810,
+      "delta_p05_median_p95_db": [
+        -1.9482545852661133,
+        -0.523137092590332,
+        0.7047077655792231
+      ]
+    },
+    {
+      "group": "persistent_bare_or_built",
+      "channel": "HH",
+      "pixels": 851009,
+      "delta_p05_median_p95_db": [
+        -2.5769052505493164,
+        -0.6544194221496582,
+        1.027093696594238
+      ]
+    },
+    {
+      "group": "persistent_bare_or_built",
+      "channel": "HV",
+      "pixels": 851009,
+      "delta_p05_median_p95_db": [
+        -2.5694042205810548,
+        -0.45785045623779297,
+        1.063135528564453
+      ]
+    },
+    {
+      "group": "persistent_water",
+      "channel": "HH",
+      "pixels": 1854264,
+      "delta_p05_median_p95_db": [
+        -1.8958925247192382,
+        -0.2811765670776367,
+        1.3442187786102264
+      ]
+    },
+    {
+      "group": "persistent_water",
+      "channel": "HV",
+      "pixels": 1854264,
+      "delta_p05_median_p95_db": [
+        -1.304088306427002,
+        -0.052112579345703125,
+        1.2419372081756588
+      ]
+    }
+  ]
+}

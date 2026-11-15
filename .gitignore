@@ -1,0 +1,20 @@
+# Local environments / dependencies
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.netrc
+.netrc
+*.part
+*.log
+# Rebuildable outputs; original inputs and trained model remain tracked.
+data/products/releases/
+data/products/forecasts/
+data/products/verification/
+data/products/radar_rerun/*.tif
+data/inputs/auxiliary/*_source_crop.tif
