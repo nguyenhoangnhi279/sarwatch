@@ -14,8 +14,6 @@ Tài liệu mô tả dữ liệu, quy trình xử lý và kết quả nghiên c�
 8. [Tái lập kết quả](#8-tái-lập-kết-quả)
 9. [Giới hạn và hướng phát triển](#9-giới-hạn-và-hướng-phát-triển)
 10. [Nguồn và giấy phép](#sources)
-11. [Khai báo công cụ hỗ trợ](#ai-disclosure)
-
 ## 1. Mục tiêu và phạm vi
 
 SARWatch phân tích thay đổi tán xạ ngược radar để khoanh vùng cần xem xét, đối chiếu với ảnh quang học, sau đó kết hợp dân số và hạ tầng nhằm xác định thứ tự kiểm chứng. Nghiên cứu tập trung vào ba câu hỏi:
@@ -383,47 +381,3 @@ Các công trình là cơ sở phương pháp, không cung cấp chỉ số thay
 - [Bản tin cảnh báo lũ tại Huế ngày 28/10](https://kttv.gov.vn/kttv/vi-VN/1/tin-canh-bao-lu-tren-cac-song-o-thanh-pho-hue-post55756.html): bối cảnh, không chứng minh trạng thái từng vùng lúc NISAR chụp ngày 27/10.
 - [Phản ánh tại cầu Duy Tân](https://tuongtac.hue.gov.vn/phan-anh/kien-nghi-co-phuong-an-de-dong-chay-duoc-luu-thong-tai-cau-duy-tan-lan-2-a243838.html): không chuyển thành nhãn ngập theo thời điểm radar.
 - [Dancing with the SARs — NASA Space Apps 2026](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/): bài thi dự án hướng tới. Trong lần rà soát trước, trang chính không truy cập được; nội dung được đối chiếu qua [bản đăng lại](https://hackathlone.com/challenges/dancing-with-the-sars). Tác giả cần kiểm tra biểu mẫu/quy định hiện hành; tài liệu này chưa xác nhận toàn bộ điều kiện nộp bài.
-
-<a id="ai-disclosure"></a>
-
-## 11. Khai báo công cụ hỗ trợ
-
-OpenAI ChatGPT/Codex hỗ trợ lập kế hoạch, triển khai phần mềm, biên tập giao diện/tài liệu, kiểm tra phương pháp, gỡ lỗi và soạn nội dung nộp bài. Tác giả chịu trách nhiệm rà soát, diễn giải và quyết định nộp bài.
-
-Ảnh radar, quang học và sản phẩm không gian được xử lý từ dữ liệu dẫn nguồn; không sử dụng ảnh tạo sinh làm bằng chứng vệ tinh. Số liệu được tính từ file thực, không phải dữ liệu mẫu tạo để trình bày. ChatGPT không cung cấp nhãn ngập thực địa.
-
-Random Forest được huấn luyện từ đặc trưng NISAR và nhãn SCL; dự báo mưa do ECMWF IFS cung cấp qua Open-Meteo. Phạm vi hỗ trợ cần được khai báo theo biểu mẫu nộp bài.
-
-<a id="submission"></a>
-
-## Phụ lục. Giới thiệu và trình bày dự án
-
-### A. Tên và mô tả ngắn
-
-**SARWatch — Ưu tiên kiểm chứng dấu hiệu ngập tại Huế bằng NISAR.**
-
-SARWatch kết hợp radar NISAR nhiều thời điểm, tham chiếu Sentinel-2 và dân số–hạ tầng để giúp xác định nơi cần kiểm chứng. Mỗi vùng có thể truy nguyên ảnh, điều kiện xử lý, mức đối chiếu và giới hạn dữ liệu. Chưa có cơ sở khẳng định đã được đơn vị ứng phó áp dụng thực tế.
-
-### B. Trình tự minh họa
-
-1. Mở bản đồ, chỉ ngày chụp và phạm vi phân tích.
-2. Chọn vị trí trong danh sách ưu tiên.
-3. So sánh radar trước/sau và ảnh Sentinel-2 tương ứng.
-4. Giải thích trạng thái đối chiếu, độ phủ dân số và lý do xếp thứ tự.
-5. Xuất danh sách kiểm chứng; kết thúc bằng giới hạn khoa học chính.
-
-Quay thao tác thật, không thêm cảnh ngập tạo sinh hoặc dùng ảnh nền như ảnh đúng ngày sự kiện. Khi nêu kết quả, phân biệt diện tích ứng viên, mức khớp nhãn nước và phơi nhiễm từng phần với ngập/thiệt hại xác nhận. Thời lượng và định dạng theo biểu mẫu nộp bài.
-
-### C. Gợi ý bảy trang trình chiếu
-
-| Trang | Nội dung |
-|---|---|
-| 1 | Vấn đề tại Huế và người dùng dự kiến |
-| 2 | Nguồn NISAR, thời điểm và phạm vi dữ liệu |
-| 3 | Quy trình radar và độ nhạy tham số |
-| 4 | Đối chiếu quang học, kể cả phần thiếu bằng chứng |
-| 5 | Random Forest, cách chia tập và so sánh Otsu |
-| 6 | Phơi nhiễm, thứ tự kiểm chứng và giao diện |
-| 7 | Giới hạn, hướng phát triển, nguồn và khai báo công cụ |
-
-Trước khi nộp, kiểm tra đăng ký đội/sự kiện, trường bắt buộc, link repo/demo ở chế độ không đăng nhập, nguồn, khai báo công cụ, thời hạn và trạng thái nộp cuối cùng. Việc chuẩn bị tài liệu không đồng nghĩa đã nộp bài hoặc bảo đảm kết quả chấm giải.
