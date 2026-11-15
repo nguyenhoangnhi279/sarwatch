@@ -1,61 +1,71 @@
-# SARWatch AI
+# SARWatch
 
-**NISAR giúp ưu tiên kiểm chứng ngập tại Huế.** NASA Space Apps 2026 · Dancing with the SARs.
+**Using NISAR observations to prioritize flood verification in Hue, Vietnam.**
 
-## Chạy ứng dụng
+Developed for NASA Space Apps 2026, *Dancing with the SARs*. SARWatch combines radar change analysis, optical reference imagery and population/infrastructure intersections in an interactive website.
+
+## Run the application
+
+On Windows, double-click **start.bat** to open the self-contained HTML version. This mode requires no Python or local server.
+
+To use the Python server and its APIs, install Python 3.11+ and run:
 
 ```bash
 python run.py --open
 ```
 
-Bấm đúp **start.bat** trên Windows để mở bản HTML trực tiếp, không cần server hay Python. Muốn dùng API server, chạy start.bat --server hoặc lệnh Python ở trên; chế độ server cần Python 3.11+. 
+Alternatively, run `start.bat --server` on Windows. Select another port with `python run.py --port 8001 --open`.
 
-| Thư mục | Bao gồm |
+## Repository structure
+
+| Directory | Contents |
 |---|---|
-| **app/** | `web/`: giao diện và font; `server/`: API và dự báo mưa |
-| **data/** | `inputs/`: toàn bộ dữ liệu gốc; `products/`: mô hình và kết quả; `manifest.json`: checksum |
-| **pipeline/** | Các bước xử lý khoa học; `core/`: thuật toán dùng chung; `notebooks/`: notebook 15 bước |
-| **dev/** | `build/`: công cụ build/kiểm tra; `tests/`: test; `tools/`: lấy dữ liệu mới; cấu hình Node |
-| **docs/** | Nguồn dữ liệu, phương pháp, khai báo AI và nội dung nộp bài |
+| `app/` | Website, bundled fonts, standalone HTML and Python server |
+| `data/` | Original inputs, trained model, analysis products and checksum manifest |
+| `pipeline/` | Scientific processing, shared algorithms and analysis notebook |
+| `dev/` | Build tools, tests, data collectors and development configuration |
+| `docs/` | Methods, evaluation, limitations and data attribution |
 
-## Các lệnh cần dùng
+## Commands
 
-| Lệnh | Công việc |
+| Command | Purpose |
 |---|---|
-| `python run.py --open` | Mở web |
-| `python run.py check` | Kiểm tra dữ liệu, checksum và tính đầy đủ của repo |
-| `python run.py build` | Tạo bản một file tại `app/standalone/index.html` |
-| `python run.py reproduce` | Tái chạy toàn bộ xử lý khoa học |
-| `python run.py test` | Kiểm tra Python và các dữ liệu đã đóng gói |
-| `python run.py package` | Xuất ZIP đầy đủ để mang sang máy khác |
+| `python run.py --open` | Start the server and open the website |
+| `python run.py check` | Verify required files and checksums |
+| `python run.py build` | Rebuild `app/standalone/index.html` |
+| `python run.py reproduce` | Rerun the scientific analysis |
+| `python run.py test` | Run repository checks and Python tests |
+| `python run.py package` | Package the project for another computer |
 
-## Cài môi trường
+## Scientific environment
 
-Để tái chạy pipeline, dùng Python 3.11:
+Use Python 3.11 and install the dependencies before reproducing the analysis:
 
 ```bash
 python -m venv dev/.venv
 # Windows
 dev/.venv/Scripts/python -m pip install -r requirements.txt
 dev/.venv/Scripts/python run.py reproduce
-# macOS/Linux: thay dev/.venv/Scripts/python bằng dev/.venv/bin/python
+# macOS/Linux: use dev/.venv/bin/python instead
 ```
 
-Để kiểm tra giao diện, cài Node 24 và chạy:
+For interface tests, use Node.js 24:
 
 ```bash
 npm --prefix dev ci
 npm --prefix dev run test:ui
 ```
 
-## Dữ liệu và kết quả
+## Data and findings
 
-Case NISAR 15/27-10-2026 có 1.646 vùng ứng viên sau sàng lọc, tổng 9,3045 km². Phơi nhiễm dân số mô hình một phần khoảng 1.681 người, với dữ liệu dân số hợp lệ trên 60,5% diện tích ứng viên; đường giao cắt khoảng 18,689 km. Đây chưa phải tác động ngập đã được xác nhận.
+The published NISAR case uses observations from 15 and 27 October 2026. It contains 1,646 screened candidate regions covering 9.3045 km². Estimated population exposure is approximately 1,681 people on valid population cells, which cover only 60.5% of candidate area. Mapped road intersections total approximately 18.689 km. These are conditional exposure estimates, not confirmed flood impacts.
 
-Random Forest đạt F1 0,8825 so với baseline Otsu 0,8560 trên tập giữ riêng theo không gian. Các chỉ số đo khớp nhãn nước tự động Sentinel-2, không phải độ chính xác cảnh báo lũ. Bản tái chạy 9,3809 km² được lưu riêng với sản phẩm Colab gốc.
+A Random Forest achieves F1 0.8825 against automated Sentinel-2 water labels, compared with 0.8560 for Otsu, using a spatially held-out test set. This measures optical-water label agreement, not flood-warning accuracy. The separate local rerun produces 9.3809 km² of screened candidates and retains its own processing records.
 
-## Tài liệu
+The historical case includes its radar, optical, population and infrastructure inputs. New weather forecasts and optional online basemap imagery require internet access. Forecast archiving and Python APIs require the server.
 
-- [Phương pháp, nguồn dữ liệu, khai báo AI và hồ sơ nộp](docs/METHODOLOGY.md)
+## Documentation and licence
 
-Mã nguồn: Apache 2.0, xem LICENSE. Dữ liệu và font giữ giấy phép riêng trong NOTICE và tài liệu nguồn. Đây là nguyên mẫu phân tích phục vụ kiểm chứng, chưa phải hệ thống cảnh báo khẩn cấp được kiểm định.
+See [Methods and evaluation](docs/METHODOLOGY.md) for the processing protocol, results, limitations and sources.
+
+Original source code is licensed under Apache 2.0; see [LICENSE](LICENSE). Third-party data and fonts retain their respective licences; see [NOTICE](NOTICE). SARWatch is a research prototype, not an operational emergency warning system.
