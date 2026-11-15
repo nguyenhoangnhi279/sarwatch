@@ -8,6 +8,8 @@
 *.md text eol=lf
 *.yml text eol=lf
 *.json text eol=lf
+*.osm text eol=lf
+*.txt text eol=lf
 *.bat text eol=crlf
 *.tif binary
 *.bin binary

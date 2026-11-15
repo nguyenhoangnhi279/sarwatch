@@ -10,6 +10,7 @@ import zipfile
 ROOT=Path(__file__).resolve().parents[2]
 MANIFEST=ROOT/'data/manifest.json'
 IGNORED={'.git','.venv','node_modules','__pycache__','standalone','releases','.pytest_cache'}
+TEXT_INPUT_SUFFIXES={'.js','.json','.osm','.txt'}
 
 
 def generated(path):
@@ -31,11 +32,23 @@ def inputs():
     return sorted({p for p in paths if p.is_file() and p!=MANIFEST and p.name!='README.md' and not generated(p)},key=str)
 
 
+def fingerprint(path, normalization=None):
+    """Hash text with an explicit newline convention; keep binary bytes exact."""
+    content=path.read_bytes()
+    if normalization is not None:
+        if normalization!='lf' or path.suffix not in TEXT_INPUT_SUFFIXES:
+            raise ValueError('Unsupported checksum normalization: '+str(path))
+        content=content.replace(b'\r\n',b'\n')
+    result=dict(bytes=len(content),sha256=hashlib.sha256(content).hexdigest())
+    if normalization is not None:result['normalization']=normalization
+    return result
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--write-manifest',action='store_true');args=parser.parse_args()
     if args.write_manifest:
-        entries={p.relative_to(ROOT).as_posix():dict(bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in inputs()}
-        MANIFEST.write_text(json.dumps(dict(schema_version=1,description='Shipped actual inputs, model and browser data; generated radar rasters can be rebuilt.',files=entries),indent=2),encoding='utf-8')
+        entries={p.relative_to(ROOT).as_posix():fingerprint(p,'lf' if p.suffix in TEXT_INPUT_SUFFIXES else None) for p in inputs()}
+        MANIFEST.write_text(json.dumps(dict(schema_version=2,description='Shipped actual inputs, model and browser data. Text entries marked normalization=lf use LF for byte counts and SHA-256; binary entries use exact bytes. Generated radar rasters can be rebuilt.',files=entries),indent=2),encoding='utf-8')
         reports=['radar_rerun/report.json','radar_rerun/screening.json','radar_rerun/product_comparison.json',
                  'radar_rerun/radiometry.json','ml/evaluation.json','validation/optical_crosscheck.json','impact/review_analysis.json']
         report_hashes={'data/products/'+name:hashlib.sha256((ROOT/'data/products'/name).read_bytes()).hexdigest()
@@ -52,7 +65,7 @@ def main():
     for name,meta in expected.items():
         path=ROOT/name
         if not path.is_file():errors.append('Missing: '+name);continue
-        if path.stat().st_size!=meta['bytes'] or hashlib.sha256(path.read_bytes()).hexdigest()!=meta['sha256']:errors.append('Checksum mismatch: '+name)
+        if fingerprint(path,meta.get('normalization'))!=meta:errors.append('Checksum mismatch: '+name)
     for name in ['before_HH','before_HV','after_HH','after_HV']:
         if 'data/inputs/raw/'+name+'.tif' not in expected:errors.append('Raw input absent from manifest: '+name)
     records=json.loads((ROOT/'data/inputs/auxiliary/osm_collection.json').read_text(encoding='utf-8'))
