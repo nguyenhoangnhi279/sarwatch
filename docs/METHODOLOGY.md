@@ -1,599 +1,429 @@
-# Methodology and evaluation
+# SARWatch — Phương pháp và đánh giá
 
-Scientific methods, measured results and limitations for the Hue case.
+Tài liệu mô tả dữ liệu, quy trình xử lý và kết quả nghiên cứu tại Huế với hai ảnh NISAR ngày 15 và 27/10/2026. Các chỉ số được tính từ dữ liệu lưu trong kho mã nguồn. SARWatch là nghiên cứu thử nghiệm phục vụ kiểm chứng dấu hiệu ngập; chưa phải hệ thống cảnh báo hoặc bản đồ ngập đã được xác nhận.
 
----
+## Mục lục
+
+1. [Mục tiêu và phạm vi](#1-mục-tiêu-và-phạm-vi)
+2. [Dữ liệu nghiên cứu](#2-dữ-liệu-nghiên-cứu)
+3. [Phân tích thay đổi radar](#radar-ml)
+4. [Mô hình phân loại nước](#4-mô-hình-phân-loại-nước)
+5. [Đối chiếu quang học](#optical-validation)
+6. [Phơi nhiễm và thứ tự kiểm chứng](#exposure)
+7. [Thông tin mưa bổ trợ](#rainfall)
+8. [Tái lập kết quả](#8-tái-lập-kết-quả)
+9. [Giới hạn và hướng phát triển](#9-giới-hạn-và-hướng-phát-triển)
+10. [Nguồn và giấy phép](#sources)
+11. [Khai báo công cụ hỗ trợ](#ai-disclosure)
+
+## 1. Mục tiêu và phạm vi
+
+SARWatch phân tích thay đổi tán xạ ngược radar để khoanh vùng cần xem xét, đối chiếu với ảnh quang học, sau đó kết hợp dân số và hạ tầng nhằm xác định thứ tự kiểm chứng. Nghiên cứu tập trung vào ba câu hỏi:
+
+- Vị trí nào có biến đổi radar đáp ứng điều kiện phát hiện nước được lựa chọn?
+- Những vị trí đó có bằng chứng tương ứng trong ảnh Sentinel-2 hay không?
+- Với dữ liệu hiện có, nên ưu tiên kiểm chứng vị trí nào?
+
+Các khái niệm được dùng thống nhất:
+
+| Khái niệm | Ý nghĩa |
+|---|---|
+| Vùng ứng viên | Vùng đáp ứng các điều kiện xử lý; chưa đồng nghĩa với vùng ngập |
+| Phơi nhiễm | Dân số hoặc hạ tầng giao với vùng ứng viên; chưa phải thiệt hại thực tế |
+| Mức khớp nhãn nước | Sự phù hợp với phân lớp tự động của Sentinel-2; chưa phải độ chính xác phát hiện lũ |
+| Thứ tự kiểm chứng | Thứ tự xem xét theo dữ liệu phơi nhiễm; chưa phải cấp độ nguy hiểm |
+
+## 2. Dữ liệu nghiên cứu
+
+Phạm vi yêu cầu dữ liệu là 107,45–107,75°Đ và 16,30–16,60°B. Diện tích, chiều dài và giao cắt được tính trong hệ tọa độ UTM múi 48 Bắc, EPSG:32648.
+
+| Dữ liệu | Thời điểm hoặc phiên bản | Vai trò | Vị trí lưu |
+|---|---|---|---|
+| NISAR L2 GCOV, frequencyA, HHHH/HVHV | 15 và 27/10/2026 | Phân tích radar | `data/inputs/raw/`, `data/inputs/metadata/` |
+| Sentinel-2 L2A, ô 48QYD | 16 và 26/10/2026 | Ảnh đối chiếu và nhãn nước tham chiếu | `data/inputs/reference/` |
+| JRC Global Surface Water | Tần suất nước v1.5, đến năm 2024 | Loại nước thường xuyên | `data/inputs/auxiliary/jrc_source_crop.*` |
+| Copernicus DEM GLO-30 | Ô N16 E107, khoảng 30 m | Tính độ dốc | `data/inputs/auxiliary/dem_source_crop.*` |
+| WorldPop Global2 R2025A v1 | Dân số ước tính năm 2026, ô khoảng 100 m | Ước tính phơi nhiễm dân số | `data/inputs/auxiliary/worldpop_*` |
+| OpenStreetMap | 37 phần trích xuất ngày 15/11/2026 | Đường và cơ sở thiết yếu | `data/inputs/auxiliary/osm/`, `osm_collection.json` |
+| Open-Meteo / ECMWF IFS | Dự báo lấy khi có mạng | Thông tin mưa bổ trợ | `data/products/forecasts/` khi chạy server |
+
+### 2.1. Thời điểm quan sát
+
+| Quan sát | Thời gian UTC | So với NISAR tương ứng |
+|---|---|---|
+| NISAR trước | 15/10/2026, 11:21:40 | — |
+| Sentinel-2 trước | 16/10/2026, 03:33:25,922 | Muộn hơn khoảng 16,2 giờ |
+| NISAR sau | 27/10/2026, 11:21:40 | — |
+| Sentinel-2 sau | 26/10/2026, 03:33:27,659 | Sớm hơn khoảng 31,8 giờ |
+
+Ảnh Sentinel-2 ngày 28/10 có mức mây công bố 100% nên không được chọn. Hai ảnh sử dụng cùng ô và cùng lưới phân lớp 20 m. Chênh lệch thời gian giữa cảm biến là giới hạn của phép đối chiếu.
+
+### 2.2. Truy nguyên và chất lượng đầu vào
+
+Hai ảnh NISAR cùng quỹ đạo xuống, track 047, frame 080, nhưng khác mức xử lý: ảnh trước là **Provisional**, ảnh sau là **Validated**. Mã collection/granule lần lượt là `C2854338529-ASF / G4372302369-ASF` và `C3622241360-ASF / G4406688609-ASF`. Siêu dữ liệu nằm trong `data/inputs/metadata/scene_metadata.json`.
+
+Bốn ảnh radar gốc được xuất qua Harmony dưới dạng GeoTIFF, kích thước 3.247 × 3.361 pixel, độ phân giải 10 m. Kho mã nguồn giữ các phần trích xuất và thông tin nguồn để xử lý lại trường hợp này mà không cần thông tin đăng nhập Earthdata.
+
+Danh mục `data/manifest.json` lưu kích thước và SHA-256. Với mục văn bản có `normalization=lf`, kích thước và checksum được tính sau khi chuẩn hóa xuống dòng LF; dữ liệu nhị phân được kiểm tra nguyên byte.
 
 <a id="radar-ml"></a>
 
-## Radar processing and machine learning
+## 3. Phân tích thay đổi radar
 
-This report accompanies the historical NISAR case. Measured results below are
-local computations, not values copied from publications.
+### 3.1. Tiền xử lý
 
-### Raw radar recovered and processed
+Quy trình trong `pipeline/radar.py` và `pipeline/core/` gồm:
 
-All four original Harmony GeoTIFF subsets are now available in `data/inputs/raw/`.
-They are 3,247 by 3,361 pixels, EPSG:32648, 10 m. SHA-256 checksums are recorded
-in `data/products/radar_rerun/report.json`. Source granule metadata is retained under
-`data/inputs/metadata/`. No Earthdata credentials are required to process these files.
+1. Căn chỉnh bốn ảnh HH/HV về lưới chung.
+2. Loại công suất không dương, giá trị không hữu hạn và vùng thiếu dữ liệu.
+3. Lọc trung bình cửa sổ 5 × 5 trên công suất tuyến tính rồi chuyển sang dB.
+4. Chỉ giữ pixel có tâm hợp lệ và ít nhất 80% cửa sổ hợp lệ; không phản chiếu dữ liệu qua biên thiếu.
+5. Tính thay đổi theo công thức `Δ = giá trị sau − giá trị trước`.
 
-`run_radar.py` aligns the grids, excludes nonpositive/nonfinite power, applies
-a 5 by 5 mean in linear power and converts to dB. A valid centre and at least
-80% valid window support are required. Missing boundaries are not reflected.
-The common processed-valid mask contains 10,634,303 pixels (97.4447%).
+Mặt nạ hợp lệ chung gồm 10.634.303 pixel, tương ứng 97,4447% lưới ảnh.
 
-| Channel | Delta p05 | Median | p95 |
+| Kênh | Phân vị 5% của Δ | Trung vị Δ | Phân vị 95% của Δ |
 |---|---:|---:|---:|
-| HH | -2.2222 dB | -0.5705 dB | 1.2810 dB |
-| HV | -1.9971 dB | -0.3594 dB | 1.1512 dB |
+| HH | −2,2222 dB | −0,5705 dB | 1,2810 dB |
+| HV | −1,9971 dB | −0,3594 dB | 1,1512 dB |
 
-Pooled HH Otsu threshold: -10.8488 dB. Require a transition from above the
-threshold before to at/below it after, simultaneous HH/HV decrease, and an
-eight-connected patch of at least 25 pixels.
+### 3.2. Phát hiện vùng ứng viên
 
-| Setting | HH / HV decrease limits | Rerun area before auxiliary screening |
+Ngưỡng Otsu từ phân bố HH gộp hai thời điểm là −10,8488 dB. Pixel ứng viên phải chuyển từ trên ngưỡng sang bằng hoặc dưới ngưỡng, đồng thời giảm ở cả HH và HV. Chỉ giữ vùng liên thông tám hướng có ít nhất 25 pixel.
+
+| Cấu hình | Điều kiện giảm HH / HV | Diện tích trước sàng lọc phụ trợ |
 |---|---|---:|
-| Loose | -1 / -0.5 dB | 13.6731 km2 |
-| Middle | -1.5 / -0.75 dB | 10.5433 km2 |
-| Strict | -2 / -1 dB | 7.4782 km2 |
+| Nới lỏng | −1 / −0,5 dB | 13,6731 km² |
+| Trung gian | −1,5 / −0,75 dB | 10,5433 km² |
+| Chặt | −2 / −1 dB | 7,4782 km² |
 
-The original Colab middle result was 10.3143 km2 before JRC/terrain screening,
-9.3045 km2 afterward. The rerun makes boundary/support/connectivity rules
-explicit and estimates its own threshold; it is not an exact reproduction of
-the original notebook. Original JRC and DEM subsets are not identical to the new public source crops.
-The full rerun now applies JRC v1.5 occurrence >=90% and DEM slope >5 degrees
-using the documented source crops, giving 9.3809 km2. It removes 434 historical-
-water pixels and 11,190 additional steep-slope pixels; no candidate lacks
-auxiliary coverage. Slope cutoffs 3/5/10 give 8.7184 / 9.3809 / 10.1870 km2.
-Jaccard with the published original is 0.8961, a product-agreement diagnostic,
-not flood accuracy. The DEM source uses PixelIsPoint: tiepoint coordinates
-are correctly shifted by half a pixel when constructing an outer-corner affine.
-JRC uses PixelIsArea. Slope is calculated on a 30 m UTM grid, then aligned
-bilinearly; occurrence uses nearest-neighbour resampling.
-The published polygons remain pinned to the original bundle. Outputs are kept
-separate so their provenance and differences remain inspectable.
+Sự khác nhau giữa các cấu hình thể hiện độ nhạy tham số; chưa phải khoảng tin cậy của diện tích ngập.
 
-### Radiometric diagnostics
+### 3.3. Sàng lọc nước thường xuyên và độ dốc
 
-Sentinel-2 SCL classes persistent at both optical dates provide diagnostic
-strata. They are not proven invariant calibration targets. With a 60 m cloud
-buffer, median HH / HV changes are:
+Với cấu hình trung gian, loại pixel có tần suất nước JRC từ 90% trở lên và độ dốc lớn hơn 5°. Tính độ dốc trên lưới UTM 30 m rồi nội suy song tuyến tính về lưới radar; JRC dùng láng giềng gần nhất.
 
-| Optical stratum | Radar pixels | Median HH | Median HV |
+DEM dùng quy ước `PixelIsPoint`, được dịch nửa pixel khi dựng phép biến đổi theo góc ngoài ô; JRC dùng `PixelIsArea`. DEM là mô hình bề mặt, có thể bao gồm cây và công trình, chưa phải địa hình đất trần.
+
+Lần tái chạy loại 434 pixel nước thường xuyên và thêm 11.190 pixel dốc; không có pixel ứng viên thiếu dữ liệu phụ trợ. Diện tích còn lại là **9,3809 km²**. Với ngưỡng dốc 3°, 5° và 10°, diện tích tương ứng là 8,7184; 9,3809 và 10,1870 km².
+
+### 3.4. Phân biệt hai sản phẩm
+
+| Sản phẩm | Trước sàng lọc | Sau sàng lọc | Vai trò |
+|---|---:|---:|---|
+| Bản Colab gốc | 10,3143 km² | 9,3045 km² | 1.646 đa giác dùng trên giao diện và trong phân tích phơi nhiễm |
+| Bản tái chạy trong repo | 10,5433 km² | 9,3809 km² | Kiểm tra quy trình với điều kiện xử lý và dữ liệu phụ trợ được ghi rõ |
+
+Hai bản khác quy tắc biên, hỗ trợ cửa sổ lọc, liên thông, cách tính ngưỡng và phần trích xuất JRC/DEM. Vì vậy, bản tái chạy không phải bản sao nguyên byte của kết quả Colab. Hệ số Jaccard giữa hai sản phẩm là **0,8961**, chỉ đo mức chồng khớp sản phẩm, không đo độ chính xác ngập. Kết quả tái chạy được giữ riêng tại `data/products/radar_rerun/`.
+
+### 3.5. Kiểm tra độ ổn định bức xạ
+
+Dùng các nhóm có cùng phân lớp Sentinel-2 ở hai ngày để khảo sát biến đổi radar. Đây chưa phải mục tiêu hiệu chuẩn đã được chứng minh bất biến.
+
+| Nhóm bề mặt | Số pixel radar | Trung vị ΔHH | Trung vị ΔHV |
 |---|---:|---:|---:|
-| Vegetation at both dates | 3,865,810 | -0.7234 dB | -0.5231 dB |
-| Bare/built at both dates | 851,009 | -0.6544 dB | -0.4579 dB |
-| Water at both dates | 1,854,264 | -0.2812 dB | -0.0521 dB |
+| Thực vật ở cả hai ngày | 3.865.810 | −0,7234 dB | −0,5231 dB |
+| Bề mặt trống/xây dựng ở cả hai ngày | 851.009 | −0,6544 dB | −0,4579 dB |
+| Nước ở cả hai ngày | 1.854.264 | −0,2812 dB | −0,0521 dB |
 
-These widespread shifts justify caution. Moisture, seasonality, wind and
-different NISAR processing maturities remain confounded. No inferred global
-offset is subtracted automatically. Raw details: `radiometry.json`.
+Biến đổi xuất hiện trên nhiều nhóm bề mặt. Độ ẩm, mùa vụ, gió và khác biệt mức xử lý NISAR có thể cùng ảnh hưởng; chưa tách được từng nguyên nhân. Không tự động trừ một độ lệch chung. Chi tiết: `data/products/radar_rerun/radiometry.json`.
 
-### Trained Random Forest: optical-water proxy agreement
+## 4. Mô hình phân loại nước
 
-Task: classify open water from per-date NISAR HH, HV and HH-HV (dB), using
-Sentinel-2 SCL class 6 versus classes 4/5 as weak labels. Other SCL classes and
-a 60 m invalid/cloud boundary are excluded. Features are on a 20 m grid.
-The optical times differ from NISAR by +16.2 and -31.8 hours.
+### 4.1. Bài toán và nhãn tham chiếu
 
-Geographic blocks are 2 km; a deterministic coordinate hash assigns the same
-block to the same split at both dates. Exclude 100 m block borders. Train /
-validation / test contain 175 / 53 / 68 blocks and 120,000 / 100,000 / 100,000
-sampled pixels. Pixels are spatially correlated, not independent observations.
-The test set has 22,675 water labels and 77,325 other clear labels.
+Random Forest phân loại mặt nước từ ba đặc trưng NISAR: HH, HV và HH − HV, cùng ở đơn vị dB trên lưới 20 m. Nhãn tham chiếu là phân lớp tự động SCL: lớp 6 là nước, lớp 4/5 là thực vật hoặc bề mặt không có thực vật. Loại các lớp khác và vùng đệm 60 m quanh phần không hợp lệ.
 
-100 trees, max depth 14, minimum leaf size 10, balanced-subsample class weights,
-seed 42. The threshold (0.60) maximizes validation IoU over 0.10-0.90 in steps
-of 0.05. Otsu uses training HH only. Neither threshold uses held-out test labels.
+Đây là **nhãn yếu**, có sai số phân lớp và lệch thời điểm so với radar. Mô hình nhận diện nước theo từng ngày, không trực tiếp học nhãn ngập mới và không thay lớp ứng viên gốc trên giao diện.
 
-| Held-out proxy agreement | Otsu baseline | Random Forest |
+### 4.2. Thiết kế thí nghiệm
+
+Chia không gian thành khối 2 km. Hàm băm tọa độ xác định tập cho từng khối và giữ nguyên phân chia ở cả hai ngày. Loại dải 100 m sát biên khối để hạn chế rò rỉ không gian.
+
+| Tập dữ liệu | Số khối | Số pixel lấy mẫu |
 |---|---:|---:|
-| Precision | 0.8131 | 0.8459 |
-| Recall | 0.9036 | 0.9223 |
-| F1 | 0.8560 | 0.8825 |
-| IoU | 0.7482 | 0.7897 |
+| Huấn luyện | 175 | 120.000 |
+| Chọn tham số | 53 | 100.000 |
+| Kiểm tra giữ riêng | 68 | 100.000 |
 
-Random Forest confusion counts: TP 20,914; FP 3,809; FN 1,761; TN 73,516.
-F1 is 2TP/(2TP+FP+FN); IoU is TP/(TP+FP+FN). Precision and recall have their
-usual TP/(TP+FP) and TP/(TP+FN) definitions. Undefined denominators yield null.
+Mô hình dùng 100 cây, độ sâu tối đa 14, tối thiểu 10 mẫu mỗi lá, trọng số lớp `balanced_subsample`, hạt giống 42. Ngưỡng 0,60 được chọn theo IoU trên tập chọn tham số, khảo sát 0,10–0,90 với bước 0,05. Phương pháp cơ sở Otsu chỉ dùng HH của tập huấn luyện; không chọn ngưỡng bằng nhãn tập kiểm tra.
 
-Per-date RF F1 is 0.9227 before and 0.8319 after. Paired bootstrap over 68
-held-out blocks (1,000 resamples, seed 2026) gives a descriptive 95% interval
-for RF-minus-Otsu IoU of 0.0186 to 0.0711. RF IoU interval is 0.6931-0.8620;
-these intervals describe this case, not future-event performance.
+### 4.3. Kết quả và ý nghĩa
 
-This is NOT validated flood accuracy. SCL is automated, includes coastal/open
-water, has cloud/classification errors, and does not observe the same moment.
-Spatial holdout does not establish temporal generalization. No calibrated flood
-probability is claimed; this model does not replace the published candidates.
-Saved model: `data/products/ml/water_proxy_rf.joblib`; evaluation: `evaluation.json`.
+Tập kiểm tra có 22.675 nhãn nước và 77.325 nhãn bề mặt rõ khác.
 
-### Independent-source flood-candidate cross-check
+| Chỉ số | Otsu | Random Forest |
+|---|---:|---:|
+| Độ chính xác của dự đoán nước — Precision | 0,8131 | 0,8459 |
+| Tỷ lệ thu hồi nhãn nước — Recall | 0,9036 | 0,9223 |
+| F1 | 0,8560 | 0,8825 |
+| Tỷ lệ giao trên hợp — IoU | 0,7482 | 0,7897 |
 
-See `METHODOLOGY.md#optical-validation`: 1,646 candidates checked, 943 with some jointly
-clear optical coverage, nine with some new-optical-water intersection, 703
-without clear reference under the fixed protocol. New-water overlap totals
-only 5,000 m2. This weak evidence is retained, not turned into confirmed flood
-extent. A correct open-water classifier does not itself prove new inundation.
+Random Forest có TP = 20.914, FP = 3.809, FN = 1.761, TN = 73.516 theo nhãn SCL. F1 = 2TP/(2TP + FP + FN); IoU = TP/(TP + FP + FN). Các chỉ số này chưa phải độ chính xác ngập thực địa.
 
-Exposure and priority ordering remain conditional on the unvalidated candidate
-mask: see `METHODOLOGY.md#exposure` for partial population coverage and OSM dates.
+F1 theo ngày là 0,9227 ở ảnh trước và 0,8319 ở ảnh sau. Lấy mẫu lại theo 68 khối kiểm tra, 1.000 lần với hạt giống 2026, cho khoảng 95% mô tả của chênh lệch IoU giữa Random Forest và Otsu là 0,0186–0,0711; khoảng của IoU Random Forest là 0,6931–0,8620.
 
-### Reproduce
+Pixel có tương quan không gian. Các khoảng trên chỉ mô tả trường hợp này, chưa chứng minh khả năng tổng quát sang sự kiện khác. Không diễn giải đầu ra thành xác suất ngập đã hiệu chuẩn.
 
-Install `requirements.txt`, then run from the project root:
-
-```powershell
-python -m pipeline.radar
-python -m pipeline.screening
-python -m pipeline.comparison
-python -m pipeline.radiometry
-python -m pipeline.training
-python -m dev.build.build_science_summary
-python -m dev.build.build_standalone
-```
-
-Public auxiliary crops and acquisition provenance are included. To reacquire them:
-`npm --prefix dev ci` then `node dev/tools/collect_auxiliary.mjs`. The complete repository ships
-the four raw radar subsets, all other case inputs and the trained model.
-Only a different case requires acquiring HH/HV through authenticated NASA
-Earthdata/Harmony; this case uses AOI 107.45,16.30,107.75,16.60. Do not publish signed
-download links or Earthdata credentials. Exact original-byte reproduction
-requires matching product/version and request settings, not just the dates.
-
-Algorithm references: Otsu (1979), DOI 10.1109/TSMC.1979.4310076,
-https://ieeexplore.ieee.org/document/4310076 ; Breiman (2001), Random Forests,
-https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf . These references
-describe methods, not the performance of SARWatch. Full data attribution is in
-`METHODOLOGY.md#sources` and `NOTICE`.
-
----
+Mô hình: `data/products/ml/water_proxy_rf.joblib`. Cấu hình và kết quả: `data/products/ml/evaluation.json`.
 
 <a id="optical-validation"></a>
 
-## Optical reference comparison
+## 5. Đối chiếu quang học
 
-**Completed 15 November 2026.** All 1,646 NISAR candidate polygons were compared with real Copernicus Sentinel-2 reference data. The result is a dated cross-sensor comparison, not independently confirmed inundation or a measured operational flood accuracy.
+### 5.1. Quy trình
 
-### Sources and timing
+Đối chiếu toàn bộ 1.646 đa giác của bản Colab gốc theo quy tắc cố định:
 
-| Role | UTC acquisition | Relation to NISAR |
-|---|---|---|
-| NISAR before | 15 Oct 2026, 11:21:40 | Primary radar observation |
-| Sentinel-2 before, S2B_48QYD_20261016_0_L2A | 16 Oct 2026, 03:33:25.922 | +16.2 hours |
-| NISAR event candidate | 27 Oct 2026, 11:21:40 | Primary radar observation |
-| Sentinel-2 after, S2B_48QYD_20261026_0_L2A | 26 Oct 2026, 03:33:27.659 | −31.8 hours |
+1. Chỉ coi SCL lớp 4, 5 và 6 là có khả năng quan sát rõ; loại các lớp khác và thêm vùng đệm 60 m.
+2. Nước mới quang học là chuyển từ lớp 4/5 sang lớp 6 trên phần rõ ở cả hai ngày; nước có sẵn là lớp 6 ở cả hai ngày.
+3. Tính diện tích giao chính xác giữa đa giác và ô SCL trong EPSG:32648; giữ tỷ lệ diện tích rõ của từng vùng.
+4. Ghi nhận giao nước mới nếu diện tích giao lớn hơn 1 m²; không xác nhận toàn bộ đa giác bị ngập.
 
-The Earth Search catalogue returned nine Sentinel-2 scenes for 12–30 October. The nearest 28 October scene reported 100% cloud and was rejected. The two selected scenes share the same tile and native 20 m classification grid. Full catalogue results and the selected actual classification TIFFs and true-colour crops are saved in data/inputs/reference. This work uses Copernicus Sentinel data (2026), distributed through Element84 Earth Search / AWS.
+Không điều chỉnh ngưỡng NISAR để tăng đồng thuận. SCL chủ yếu phục vụ xử lý khí quyển, chưa phải bản đồ ngập chuẩn. Các ô trộn tại bờ nước và chênh lệch thời điểm cần được diễn giải thận trọng.
 
-The official NCHMF bulletin issued at 17:00 ICT on 28 October discusses flood risk during 28–29 October: https://kttv.gov.vn/kttv/vi-VN/1/tin-canh-bao-lu-tren-cac-song-o-thanh-pho-hue-post55756.html . It establishes event context, not pixel labels or evidence that all candidate polygons were flooded at 18:21 ICT on 27 October. A 27 October Hue-S report concerning Duy Tan bridge discusses drainage obstruction and recurrent flooding: https://tuongtac.hue.gov.vn/phan-anh/kien-nghi-co-phuong-an-de-dong-chay-duoc-luu-thong-tai-cau-duy-tan-lan-2-a243838.html . It was not turned into a flood label because its text does not establish inundation at the NISAR observation.
+### 5.2. Kết quả
 
-The independent Sentinel-1 catalogue was also searched. It contains nearby observations on 25 and 28 October, but none at the NISAR event acquisition. Merely finding another radar product does not create a validated reference; these metadata are retained without inventing a Sentinel-1 flood result.
-
-### Fixed optical comparison protocol
-
-Use native Sentinel-2 SCL classes 4 (vegetation), 5 (not vegetated) and 6 (water) as potentially clear. Exclude every other class and add a conservative 60 m buffer around excluded pixels. New optical water is a transition from class 4/5 to class 6. Existing water is class 6 at both dates. The same masks are applied throughout the study; no NISAR threshold was retuned to improve agreement.
-
-Measure exact polygon/cell intersection area in EPSG:32648 for each candidate. Partially cloud-obscured regions retain their clear-area fraction. A positive overlap of more than 1 m² is recorded as “some intersection with the optical new-water layer”, not “the polygon is confirmed flooded”. The reference resolution is 20 m, so small mixed-pixel boundaries require particular caution.
-
-Official classification guidance: https://sentiwiki.copernicus.eu/web/s2-processing . Copernicus explicitly notes that SCL primarily supports atmospheric processing and is not a strict land-cover map: https://documentation.dataspace.copernicus.eu/FAQ.html . Therefore even coincident class changes need corroboration, and the approximately 32-hour event-date gap further limits interpretation.
-
-### Actual results
-
-| Result | Candidates |
+| Trạng thái | Số vùng |
 |---|---:|
-| Compared with both selected optical observations | 1,646 |
-| Have some jointly clear reference area | 943 |
-| No jointly clear area after quality exclusions | 703 |
-| Some intersection with new optical-water layer | 9 |
-| Existing optical water only | 28 |
-| No new-water signal on the clear part | 906 |
+| Có giao nước mới trên phần ảnh rõ | 9 |
+| Chỉ giao nước đã có sẵn | 28 |
+| Không có dấu nước mới trên phần ảnh rõ | 906 |
+| Không có phần ảnh rõ ở cả hai ngày sau lọc chất lượng | 703 |
+| **Tổng số vùng** | **1.646** |
 
-The final three categories sum to the 943 candidates with some clear reference area. “Some clear area” does not mean an entire polygon is observable.
+Có 943 vùng quan sát được ít nhất một phần. Diện tích rõ giao vùng ứng viên là **3,8239 km²**, khoảng **41,1%** tổng diện tích. Diện tích giao nước mới quang học chỉ khoảng **0,0050 km²**, tức 5.000 m².
 
-- Candidate area: 9.3045 km².
-- Jointly clear candidate area: 3.8239 km², approximately 41.1% of the candidate area.
-- Intersection with new optical water: approximately 0.0050 km² (5,000 m²), distributed across nine candidates.
-- No independently confirmed flood area is reported.
+Chín mã vùng có giao nước mới là 125, 382, 401, 413, 418, 458, 921, 1119 và 1452; chưa phải chín vùng ngập xác nhận. Kết quả từng vùng: `data/products/validation/optical_crosscheck.csv` và `optical_crosscheck.json`.
 
-The nine candidates are 125, 382, 401, 413, 418, 458, 921, 1119 and 1452. Their clear-area fractions and overlap areas are provided in data/products/validation/optical_crosscheck.csv. These are candidates with limited corroborating classification evidence, not nine confirmed flood zones.
+### 5.3. Độ nhạy và kiểm tra trực quan
 
-**Interpretation:** this optical comparison does not support treating the entire 9.3045 km² as observed flooding. On much of the clear reference area there is no matching new-water signal. Possible explanations include changed soil/crop conditions or radar-processing differences; those explanations are hypotheses. Transient flooding between the optical and radar acquisitions also cannot be excluded.
-
-### Sensitivity to optical quality exclusion
-
-| Extra buffer | Clear fraction of centre-rasterized candidate grid | Overlapping new-water grid cells |
+| Vùng đệm loại chất lượng | Tỷ lệ ô ứng viên có ảnh rõ | Số ô giao nước mới |
 |---|---:|---:|
-| 0 m | 70.81% | 28 |
-| 60 m — primary protocol | 40.84% | 15 |
-| 100 m | 27.02% | 9 |
+| 0 m | 70,81% | 28 |
+| 60 m — cấu hình chính | 40,84% | 15 |
+| 100 m | 27,02% | 9 |
 
-These are 20 m comparison-grid statistics. Region-area results above use exact vector intersections and therefore do not equal grid-cell counts multiplied by 400 m². The weak new-water agreement persists across these tested quality buffers.
+Bảng tính trên lưới 20 m theo tâm ô, khác với diện tích giao véc-tơ chính xác ở trên. Không dùng số ô nhân diện tích ô để thay kết quả giao đa giác.
 
-### Qualitative inspection completed
+Đã xem ảnh trước/sau của 12 vùng: sáu vùng đứng đầu theo phơi nhiễm, ba vùng có giao quang học lớn và ba vùng bị che. Nhiều khu vực có dạng ruộng, thực vật, bề mặt trống hoặc rìa nước; chưa xác lập được phạm vi ngập mới rõ ràng. Tám điểm ngoài vùng ứng viên cũng được xem, gồm các ví dụ nước ổn định, đất ổn định, nước mới theo SCL và vùng bị che.
 
-True-colour before/after crops were visually inspected for twelve candidate regions: the six highest exposure-ranked locations, three with the largest optical overlap, and three obscured controls. This is purposive inspection, not unbiased accuracy sampling, and it is not a field survey.
+Đây là kiểm tra có chủ đích với hỗ trợ của ChatGPT/Codex, chưa phải mẫu đánh giá ngẫu nhiên, điều tra thực địa hay kết luận chuyên gia độc lập. Các điểm ngoài vùng ứng viên chưa được coi là mẫu âm đúng hoặc trường hợp bỏ sót. Ảnh và hồ sơ được giữ trong `data/products/validation/`.
 
-| Regions | Observation from the optical crops |
-|---|---|
-| 651, 452, 333, 494, 448, 247 | Predominantly field/vegetation/bare-surface patterns; no clearly delineated new open-water extent is established by these crops. Colour/brightness changes alone are insufficient to label floodwater. |
-| 413 | Small positive classification overlap; the colour crop does not establish a distinct new open-water body. Mixed surface/pixel effects remain possible. |
-| 125 | River/shore-edge setting; existing water is visible at both dates. A small boundary change does not establish broad inundation. |
-| 921 | Vegetation and possible cloud-edge effects in the second crop; limited classification overlap is insufficient for confirmation. |
-| 1, 6, 8 | Quality-masked in the conservative protocol. The coarse colour crops do not justify overriding the mask or confirming flooding. |
+### 5.4. Diễn giải
 
-Four before/after inspection sheets are saved as data/products/validation/optical_review_sheet_1.jpg through _4.jpg. This qualitative review was performed by the assistant and is not an independent expert adjudication.
+Phép đối chiếu **không đủ cơ sở coi toàn bộ 9,3045 km² là ngập thực tế**. Trên phần lớn diện tích rõ không có dấu nước mới tương ứng. Biến đổi đất, cây trồng hoặc khác biệt xử lý radar là các giả thuyết cần kiểm tra; ngập tạm thời giữa hai lần chụp cũng chưa thể loại trừ.
 
-Eight outside-candidate controls were also inspected: two each of stable optical water, stable optical land, new optical-water pixels outside the candidates and obscured pixels, selected with seed 42. Stable water/land examples provide useful visual checks; optical-only examples include shoreline/pond/land-use boundaries, and obscured examples show clouds or bright ambiguous surfaces. These are not labelled true negatives or false negatives. The native NISAR valid-observation mask is absent locally, and both sensor timing and optical classification uncertainty prevent that interpretation. Their coordinates, classification values and images are retained in data/products/validation/noncandidate_controls.json and noncandidate_controls_1.jpg through _4.jpg.
-
-### What changed in the application
-
-Every candidate now has a separate automatic optical-reference status and its actual clear-area/overlap measurements. Selecting a candidate shows dated Sentinel-2 images beside each other. Users can filter the nine with some new-water overlap or inspect obscured cases. The interface shows automatic source status; it does not collect personal notes or review status. All three original navigation tabs are retained; no raw code or JSON is displayed.
-
-### What remains unverified, and why
-
-An independently surveyed or otherwise sufficiently reliable same-event flood map is still absent. Optical SCL is not ground truth, the observations differ by hours/days, and the local export lacks the full NISAR quality/validity rasters. Accordingly, F1/IoU/precision/recall are not published as flood-detection accuracy. The report provides actual comparison results rather than changing every flag to “validated”. Population estimates and road intersections are conditional exposure to candidate geometry, not independently observed damage.
-
-To strengthen the case study, obtain an observation pair that brackets a documented flood event more closely and includes the native valid masks and processing metadata. The current detection baseline should be investigated rather than tuned to create an attractive flood extent.
-
-### Reproduce
-
-Use the GIS processing environment and the saved public inputs:
-
-```powershell
-python -m pipeline.reference
-python -m pipeline.controls
-python -m dev.build.build_standalone
-```
-
-Artifacts: optical_crosscheck.json, optical_crosscheck.csv, reference imagery, inspection sheets and the embedded app/web/reference-data.js. Unit tests check the reference class-transition and cloud-edge exclusion logic; these implementation tests do not establish scientific accuracy.
-
----
+Bản tin và phản ánh địa phương chỉ cung cấp bối cảnh, không được chuyển thành nhãn ngập từng pixel. Tra cứu Sentinel-1 có quan sát lân cận ngày 25 và 28/10 nhưng nghiên cứu chưa tạo bản đồ ngập đối chứng từ các ảnh này.
 
 <a id="exposure"></a>
 
-## Population, infrastructure and review priorities
+## 6. Phơi nhiễm và thứ tự kiểm chứng
 
-This is an analytical case study, not an operational warning system. A review rank means “look here first according to the available exposure evidence”, not “this place will flood” or “this is the most dangerous location”.
+### 6.1. Dân số
 
-### Inputs actually processed
+WorldPop cung cấp số người ước tính trên ô gốc, không phải mật độ để phóng lên lưới radar 10 m. Đóng góp của một ô được tính bằng:
 
-- The real user-provided NISAR analysis export, observation dates 15/27 October 2026: 1,646 screened candidate polygons, 9.3045 km², version aa7948379b0991c9. No independent inundation reference has been supplied.
-- WorldPop 2026, Global2 R2025A v1, constrained 100 m population-count grid. Downloaded from the official WorldPop API as a GeoTIFF for the Hue rectangle. Dataset DOI: https://doi.org/10.5258/SOTON/WP00839 . CC BY 4.0. Full official metadata, citation, request and source URL are recorded under data/inputs/auxiliary/worldpop_*.json.
-- Current OpenStreetMap extracts from the official /api/0.6/map endpoint, retrieved on 15 November 2026. The resumable collector issued 37 successful low-concurrency extracts covering candidate locations, subdividing a dense query when necessary. Data © OpenStreetMap contributors, ODbL 1.0. Query bounds, timestamps and request URLs are preserved in data/inputs/auxiliary/osm_collection.json. Raw public extracts are retained under data/inputs/auxiliary/osm/.
+**Dân số ô × diện tích giao với đa giác / diện tích ô gốc.**
 
-The OSM snapshot is later than the radar observations. It documents mapped objects, not their status during the October event. Overpass and ohsome endpoints were unavailable; the official OSM map API was used as a fallback. Query success does not guarantee that OSM has mapped every road or facility.
+Giả định dân số phân bố đều trong ô. Loại dữ liệu thiếu, không hữu hạn hoặc âm; không coi thiếu dữ liệu là không có người. Giữ riêng tỷ lệ diện tích được dữ liệu hợp lệ bao phủ. Vùng hoàn toàn thiếu dữ liệu nhận giá trị chưa xác định; ô hợp lệ có dân số bằng 0 mới đóng góp 0.
 
-### Population exposure
+Tổng từng phần khoảng **1.681 người ước tính**, trên **60,5%** diện tích ứng viên có dữ liệu hợp lệ. Có **488 vùng** không giao ô dân số hợp lệ. Đây chưa phải tổng dân số đầy đủ, số người hiện diện hoặc số người chịu thiệt hại.
 
-Each original WorldPop cell is a population count, not a density to be upsampled. For every candidate polygon, compute its intersection with each source cell, after projecting geometries to UTM zone 48N (EPSG:32648). The contribution is:
+### 6.2. Hạ tầng
 
-`cell_population × intersection_area / original_cell_area`
+Loại trùng OSM theo loại/mã đối tượng. Cắt tim đường theo đa giác trong EPSG:32648 và hợp nhất các đoạn trùng trước khi đo. Không tính cả con đường chỉ vì nó chạm vùng ứng viên. Loại lối đi bộ, bậc thang, đường xe đạp, đường dự kiến/đang xây và đa giác có nhãn đường.
 
-Assume uniform distribution within each original cell. Do not resample population counts onto the 10 m radar grid. NoData and nonfinite/negative values are excluded, not interpreted as zero residents. Preserve the fraction of candidate area covered by valid population cells. An entirely unobserved candidate receives a null estimate; a candidate intersecting only valid zero-valued cells can receive zero.
+Cơ sở thiết yếu gồm bệnh viện, phòng khám, trường học, trường mầm non, trạm cứu hỏa và công an. Kiểm tra giao hình học thật để tính cơ sở giao trực tiếp; cơ sở trong 500 m chỉ được ghi là lân cận. Hạn chế đếm trùng điểm nhãn và công trình tương ứng.
 
-The current partial sum is approximately 1,681 modelled persons across valid cells. Valid population cells cover approximately 60.5% of total candidate area; 488 candidates have no valid population cells. This is not a complete population total, a number of victims or a number of people present in floodwater. The interface and exports retain the coverage distinction.
+| Đại lượng | Kết quả |
+|---|---:|
+| Tổng tim đường giao vùng ứng viên | 18,689 km |
+| Vùng có đường giao cắt | 300 |
+| Cơ sở thiết yếu giao trực tiếp | 0 |
+| Cơ sở thiết yếu lân cận trong 500 m | 19 |
+| Vùng được truy vấn hạ tầng bao phủ đầy đủ theo dung sai hình học | 1.645/1.646 |
 
-### Infrastructure overlap
+OSM được lấy sau thời điểm radar và có thể thiếu đối tượng/nhãn. Kết quả chưa xác định đường bị đóng, công trình hư hỏng hay cơ sở còn hoạt động. Vùng có độ phủ truy vấn một phần vẫn được đánh dấu.
 
-Deduplicate OSM objects by type/id across extracts. Road centerlines are clipped to candidate polygons in EPSG:32648; measure only intersecting line length, not the full length of a road touching a polygon. Union coincident clipped lines before reporting total length. Exclude footpaths, steps, cycleways, proposed/construction roads and area-like highway polygons.
+### 6.3. Xếp thứ tự kiểm chứng
 
-Facilities include hospitals, clinics, schools, kindergartens, fire stations and police. Test actual geometry intersections for direct exposure. A facility within 500 m is shown separately as nearby context; it is not counted as directly exposed. Avoid counting a tagged point label and its matching footprint twice where possible; incomplete tagging can still affect counts.
+Sắp xếp lần lượt theo các tiêu chí; chỉ dùng tiêu chí sau khi tiêu chí trước bằng nhau:
 
-Current results: 18.689 km mapped road-centerline overlap across 300 candidates; zero facilities directly intersect candidates; 19 distinct mapped facilities within 500 m of candidate geometries. Infrastructure query coverage is complete under the geometric tolerance for 1,645 candidates and partial for one; that partial record remains flagged. Neither road overlap nor facility proximity establishes operational disruption.
+1. Có cơ sở thiết yếu giao trực tiếp.
+2. Dân số ước tính trên phần dữ liệu hợp lệ, giảm dần.
+3. Chiều dài đường giao cắt, giảm dần.
+4. Diện tích ứng viên, giảm dần; cuối cùng dùng mã vùng để giữ thứ tự ổn định.
 
-### Review ordering
+Không sử dụng trọng số học được hoặc xác suất rủi ro đã hiệu chuẩn. Trong trường hợp này, không có cơ sở giao trực tiếp nên dân số chi phối đầu danh sách. Thiếu dữ liệu có thể làm thay đổi thứ tự.
 
-Sort lexicographically by:
-
-1. Whether a mapped essential facility directly intersects the candidate.
-2. Descending estimated population on valid WorldPop cells.
-3. Descending road-centerline overlap length.
-4. Descending candidate area, then stable candidate identifier.
-
-There are no learned weights, artificial confidence percentages or calibrated risk classes. In the present case, no facility directly intersects, so population exposure determines the leading ranks. Partial/missing population coverage can understate exposure and is explicitly retained. This ranking supports examination; it cannot replace expert judgment or independent validation.
-
-The point suggested for checking is a representative point inside the polygon, not an assumed safe access point or a recommended navigation route.
-
-### Human review
-
-The viewer can select a location, compare dated radar and optical evidence, filter reference status and export the verification list. CSV export contains location coordinates, exposure values, missing-data flags, priority rationale and automatic optical cross-check fields. Personal notes and review-status controls have been removed.
-
-### Reproduce
-
-Processing needs Python 3.11+ and the GIS dependencies in requirements.txt. Viewing needs none of them.
-
-```powershell
-python -m pipeline.exposure --prepare-osm
-```
-
-Use dev/tools/collect_osm.mjs's collectBatch(root, count) from Node to collect/resume the public extracts. The WorldPop request and its exact source grid are saved in data/inputs/auxiliary. Then:
-
-```powershell
-python -m pipeline.exposure
-python -m dev.build.build_standalone
-```
-
-Outputs: data/products/impact/review_analysis.json, review_candidates.geojson, review_locations.csv, and the embedded app/web/impact-data.js. Rebuild exposure after changing the NISAR export; the website checks that their analysis-version identifiers agree.
-
-### Checks and remaining scientific work
-
-Tests cover population-count conservation over adjacent cell portions, NoData handling, clipped road lengths and deterministic review ordering. The real-data DOM test checks automatic loading, priority selection, map overlays and exports. These are implementation checks, not evidence of flood-detection accuracy.
-
-Still needed: independent date-matched flood evidence, assessment of false positives and omissions, sensitivity of the review order to missing population/OSM coverage, and review with a local practitioner. Different processing maturity between the NISAR dates remains a scientific limitation.
-
----
+Điểm đại diện trong đa giác chỉ dùng định vị kiểm chứng, chưa phải điểm tiếp cận an toàn hoặc hướng dẫn di chuyển. Kết quả: `data/products/impact/review_analysis.json`, `review_candidates.geojson` và `review_locations.csv`.
 
 <a id="rainfall"></a>
 
-## Rainfall context and verification
+## 7. Thông tin mưa bổ trợ
 
-### Luồng đã triển khai
+### 7.1. Nguồn và cách tính
 
-Trang chủ tự lấy tổng lượng giáng thủy theo giờ từ Open-Meteo, chọn rõ mô hình ECMWF IFS. Có bốn điểm khảo sát trong vùng Huế; đây không phải dự báo chi tiết từng phường. Mỗi điểm có tọa độ yêu cầu và tọa độ ô mô hình trả về. Nguồn cung cấp dự báo; chưa có mô hình mưa do SARWatch huấn luyện.
+Ứng dụng lấy lượng giáng thủy theo giờ từ Open-Meteo, chọn ECMWF IFS tại bốn điểm khảo sát quanh Huế. Phân biệt tọa độ yêu cầu và tọa độ ô mô hình; chưa coi đây là dự báo riêng từng phường.
 
-Máy chủ chạy bộ thu thập mỗi 15 phút và lưu bản JSON nguyên gốc theo thời điểm tải ở data/products/forecasts. Chỉ hoạt động khi máy chủ còn chạy và có mạng. Thời điểm tải không phải thời điểm khởi tạo mô hình. Không có cảnh báo gửi điện thoại, dịch vụ nền khi tắt máy hay hosting công khai.
+Tổng 5/12 giờ được tính từ các khoảng giờ giao cửa sổ cần xem. Giá trị tại thời điểm `t` đại diện cho giờ trước `t`; các giờ biên được phân bổ theo thời lượng giao, giả định mưa đều trong giờ. Nếu thiếu bất kỳ phần cần thiết nào, tổng được ghi chưa xác định, không thay bằng 0.
 
-Mưa tại timestamp t là tích lũy của giờ trước t. Tổng từ hiện tại đến +5h/+12h chia tỷ lệ các giờ biên theo độ dài giao; giả định mưa đều trong giờ. Bất kỳ khoảng thiếu dữ liệu nào làm tổng không xác định, không thay thành 0. Không tạo dữ liệu dự báo mẫu để che lỗi mạng.
+Server Python thu thập mỗi 15 phút và lưu phản hồi vào `data/products/forecasts/` khi còn chạy và có mạng. Thời điểm tải không đồng nghĩa với thời điểm khởi tạo dự báo. Bản HTML/GitHub Pages có thể gọi nhà cung cấp trực tiếp khi có mạng, nhưng không chạy bộ lưu định kỳ Python.
 
-### Kiểm định bằng quan trắc
+SARWatch chưa huấn luyện mô hình dự báo mưa hay cảnh báo ngập. Ngưỡng mưa người dùng đặt chỉ phục vụ theo dõi, không phải mức báo động chính thức; chưa có chức năng gửi cảnh báo điện thoại.
 
-Công cụ evaluate_weather.py dành cho người vận hành, không phải người dùng website. Chuẩn bị CSV với các cột:
+### 7.2. Đánh giá khi có quan trắc
 
-`snapshot,site,hours,observed_mm,observation_source`
+`pipeline/rainfall_evaluation.py` nhận CSV với các cột:
 
-- snapshot: tên JSON đã lưu trong data/products/forecasts.
-- site: đúng mã điểm hue/northwest/coast/south.
-- hours: 5 hoặc 12.
-- observed_mm: tổng quan trắc độc lập cho đúng vị trí và cửa sổ từ retrieved_at đến retrieved_at + hours.
-- observation_source: tên trạm/đơn vị, định danh tài liệu hoặc URL có thể kiểm tra.
+| Cột | Nội dung |
+|---|---|
+| `snapshot` | Tên JSON đã lưu trong `data/products/forecasts/` |
+| `site` | `hue`, `northwest`, `coast` hoặc `south` |
+| `hours` | Cửa sổ 5 hoặc 12 giờ |
+| `observed_mm` | Tổng quan trắc độc lập, đúng vị trí và cửa sổ từ thời điểm tải đến sau 5/12 giờ |
+| `observation_source` | Nguồn quan trắc có thể truy nguyên |
 
-Không dùng dự báo của chính nhà cung cấp làm quan trắc. Nếu dùng IMERG hoặc tái phân tích, phải ghi rõ đó là sản phẩm ước tính, đánh giá sai số nguồn tham chiếu và không gọi là mưa đo trạm. Hiện chưa có kết nối quan trắc độc lập tự động.
-
-Ví dụ lệnh (ngưỡng chỉ là lựa chọn của thí nghiệm, không phải mức báo động chính thức):
+Ví dụ lệnh với ngưỡng thí nghiệm, không phải mức báo động chính thức:
 
 ```powershell
 python -m pipeline.rainfall_evaluation observations.csv --threshold-5 10 --threshold-12 20
 ```
 
-Báo cáo được lưu ở data/products/verification/rainfall_metrics.json và trang chủ tự đọc khi mở qua start.bat. Kiểm định tính riêng hai cửa sổ; MAE, RMSE, bias đơn vị mm; POD=H/(H+M), FAR=F/(H+F), CSI=H/(H+F+M). Mẫu số 0 trả null. Số mẫu, nguồn và thời kỳ được công bố. Công cụ kiểm tra cấu trúc nhưng không tự chứng thực chất lượng nguồn nhập.
+Báo cáo lưu ở `data/products/verification/rainfall_metrics.json`, gồm MAE, RMSE, độ lệch trung bình theo mm và các chỉ số vượt ngưỡng: POD = H/(H + M), FAR = F/(H + F), CSI = H/(H + F + M). H là số dự báo trúng, F là số báo khống, M là số bỏ sót; mẫu số 0 cho kết quả chưa xác định.
 
-Phải định trước ngưỡng, chia theo thời gian/đợt mưa, kiểm tra nhiều mùa và so với baseline. Các cửa sổ chồng nhau không phải các sự kiện độc lập; không suy diễn khoảng tin cậy từ số cửa sổ. Chưa có kiểm định thì giao diện ghi chưa đo.
+Hiện chưa có kết nối tự động nguồn quan trắc độc lập và chưa công bố kỹ năng dự báo mưa của trường hợp này. Không dùng dự báo của chính nhà cung cấp làm quan trắc. Nếu dùng ước tính vệ tinh/tái phân tích phải ghi rõ bản chất và sai số nguồn. Các cửa sổ chồng nhau không phải sự kiện độc lập; kết quả đánh giá mưa chưa chứng minh độ chính xác cảnh báo ngập.
 
-### Điều kiện để gọi là cảnh báo ngập
+## 8. Tái lập kết quả
 
-Chưa có mô hình ngập đã huấn luyện hay kiểm định. Tín hiệu vượt ngưỡng mưa do người dùng tự đặt chỉ là theo dõi mưa. Cần chuỗi mực nước, mưa trước sự kiện, vận hành hồ, địa hình/thoát nước và nhãn ngập theo thời gian để xây mô hình riêng. Đánh giá ngập bằng nhãn độc lập; chỉ số mưa tốt không chứng minh cảnh báo ngập tốt. NISAR lịch sử hỗ trợ phân tích không gian, không cung cấp dự báo mưa.
+### 8.1. Môi trường và lệnh chạy
 
-### Tài liệu
+Từ thư mục gốc, tạo môi trường Python 3.11, cài thư viện rồi chạy các lệnh:
 
-- Open-Meteo ECMWF API: https://open-meteo.com/en/docs/ecmwf-api (hourly precipitation, ECMWF IFS; CC BY 4.0).
-- Ayzel et al. (2019), Optical flow models as an open benchmark for radar-based precipitation nowcasting (rainymotion v0.1), https://doi.org/10.5194/gmd-12-1387-2019. Tham khảo phương pháp kiểm định; bài nghiên cứu 5–60 phút, không chứng minh kỹ năng 5/12h của SARWatch.
-- Pulkkinen et al. (2019), Pysteps v1.0, https://doi.org/10.5194/gmd-12-4185-2019. Tham khảo kiểm định dự báo mưa xác suất/không gian; chưa triển khai FSS/Brier khi chưa có dự báo và tham chiếu phù hợp.
+```powershell
+python -m venv dev/.venv
+dev/.venv/Scripts/python -m pip install -r requirements.txt
+dev/.venv/Scripts/python run.py check
+dev/.venv/Scripts/python run.py reproduce
+dev/.venv/Scripts/python run.py test
+```
 
+Trên macOS/Linux thay `dev/.venv/Scripts/python` bằng `dev/.venv/bin/python`. Lệnh `reproduce` chạy radar, sàng lọc, so sánh sản phẩm, chẩn đoán bức xạ, huấn luyện, phơi nhiễm, đối chiếu quang học và dựng dữ liệu giao diện. Trường hợp khác cần tải đầu vào mới và ghi đúng phiên bản/yêu cầu trích xuất; không chỉ thay ngày.
 
----
+| Thao tác riêng | Lệnh sau khi kích hoạt môi trường |
+|---|---|
+| Xử lý radar và sàng lọc | `python run.py radar` |
+| Huấn luyện phân loại nước | `python run.py train` |
+| Tính phơi nhiễm | `python run.py impact` |
+| Đối chiếu quang học và điểm ngoài vùng ứng viên | `python run.py reference` |
+| Dựng lại bản HTML | `python run.py build` |
+
+### 8.2. Kiểm tra và xem kết quả
+
+Kiểm thử gồm xử lý dữ liệu thiếu, lọc radar, giao cắt dân số/đường, thứ tự ưu tiên, phân lớp tham chiếu, checksum và chức năng HTTP. Đây là kiểm tra hành vi phần mềm, không thay đánh giá bằng nhãn độc lập.
+
+Kiểm tra giao diện bằng Node và cấu hình trong repo:
+
+```powershell
+npm --prefix dev ci
+npm --prefix dev run test:ui
+```
+
+Trên Windows, `start.bat` mở `app/standalone/index.html`; `start.bat --server` hoặc `python run.py --open` chạy server. Bản tĩnh phục vụ trường hợp lịch sử; thu thập dự báo và API Python cần server. Ảnh nền trực tuyến và dự báo mới cần internet.
+
+## 9. Giới hạn và hướng phát triển
+
+| Giới hạn | Hệ quả | Công việc tiếp theo |
+|---|---|---|
+| Chưa có nhãn ngập độc lập khớp thời điểm | Chưa đo được độ chính xác phát hiện ngập | Thu thập nhãn sự kiện từ nguồn đủ tin cậy |
+| NISAR khác mức xử lý; phần xuất chưa có đủ lớp chất lượng gốc | Biến đổi radar có thể chứa yếu tố ngoài ngập | Bổ sung mặt nạ hợp lệ và kiểm tra nhất quán bức xạ |
+| Sentinel-2 lệch giờ, có mây và sai số SCL | Đối chiếu chỉ hỗ trợ một phần | Chọn quan sát sát sự kiện hơn, kết hợp nhiều nguồn |
+| Mô hình chỉ được đánh giá trên một trường hợp | Chưa chứng minh khả năng dùng cho sự kiện mới | Đánh giá nhiều sự kiện, chia tập theo thời gian và khu vực |
+| Dân số/OSM có độ phủ hạn chế và khác thời điểm | Phơi nhiễm, thứ tự kiểm chứng có thể thiên lệch | Phân tích độ nhạy với dữ liệu thiếu, tham vấn người làm thực tế |
+| Thiếu mô hình thủy văn/thủy lực và quan trắc tương ứng | Chưa thể dự báo ngập từ mưa | Kết hợp mực nước, mưa trước sự kiện, vận hành hồ và thoát nước |
+
+Kết quả phù hợp cho khảo sát và truy nguyên bằng chứng; chưa dùng làm căn cứ duy nhất cho quyết định ứng phó hoặc sơ tán.
 
 <a id="sources"></a>
 
-## Data sources and licences
+## 10. Nguồn và giấy phép
 
-### NISAR
+### 10.1. Dữ liệu và phần mềm
 
-NASA–ISRO NISAR L2 GCOV frequencyA HHHH/HVHV.
+| Nguồn | Tài liệu hoặc định danh | Ghi nguồn và điều kiện |
+|---|---|---|
+| NASA–ISRO NISAR | [Tài liệu tại ASF](https://nisar-docs.asf.alaska.edu/); mã sản phẩm ở mục 2 | Ghi nguồn NISAR và giữ siêu dữ liệu phiên bản |
+| Copernicus Sentinel-2 | [Earth Search](https://earth-search.aws.element84.com/v1), [SCL](https://sentiwiki.copernicus.eu/web/s2-processing), [giải thích dữ liệu](https://documentation.dataspace.copernicus.eu/FAQ.html) | Sử dụng dữ liệu Copernicus Sentinel (2026) đã xử lý; URL ảnh và tra cứu lưu trong `data/inputs/reference/` |
+| JRC Global Surface Water | [Trang tải](https://global-surface-water.appspot.com/download) | Ghi nguồn EC JRC/Google; trích dẫn Pekel và cộng sự (2016) |
+| Copernicus DEM GLO-30 | [Danh mục](https://registry.opendata.aws/copernicus-dem/), [giấy phép](https://copernicus-dem-30m.s3.amazonaws.com/readme.html) | Giữ dòng ghi công bắt buộc bên dưới |
+| WorldPop | [DOI: 10.5258/SOTON/WP00839](https://doi.org/10.5258/SOTON/WP00839), [API](https://api.worldpop.org/v3/raster) | CC BY 4.0; tác giả/trích dẫn đầy đủ ở `worldpop_metadata.json`, yêu cầu tải ở `worldpop_provenance.json` trong `data/inputs/auxiliary/` |
+| OpenStreetMap | [Bản quyền](https://www.openstreetmap.org/copyright), [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/) | © OpenStreetMap contributors; dữ liệu suy dẫn giữ ghi nguồn và nghĩa vụ chia sẻ tương ứng |
+| Open-Meteo / ECMWF | [API](https://open-meteo.com/en/docs/ecmwf-api) | Ghi nguồn Open-Meteo / ECMWF; CC BY 4.0 |
+| Esri World Imagery, tùy chọn | [Dịch vụ ảnh nền](https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer) | Giữ ghi nguồn và tuân thủ điều khoản; không dùng ảnh nền khác ngày làm nhãn ngập |
+| Be Vietnam Pro | `app/web/fonts/OFL.txt` | SIL Open Font License; font lưu kèm và nhúng trong bản HTML |
+| Mã nguồn SARWatch | [LICENSE](../LICENSE), [NOTICE](../NOTICE) | Apache 2.0 cho mã nguồn gốc; dữ liệu/font giữ giấy phép riêng |
 
-- 15 October 2026, 11:21:40 UTC: Provisional, C2854338529-ASF / G4372302369-ASF.
-- 27 October 2026, 11:21:40 UTC: Validated, C3622241360-ASF / G4406688609-ASF.
-- Track 047, frame 080, Descending. Approximately 18:21 ICT.
-- Records: data/inputs/metadata/scene_metadata.json.
-- Documentation: https://nisar-docs.asf.alaska.edu/
+Dòng ghi công DEM được giữ nguyên ngôn ngữ gốc:
 
-The user downloaded and processed subsets on Colab and reported a shared 10 m EPSG:32648 grid. Different processing maturity requires radiometric consistency checks. Flood-peak timing has not been independently verified.
+> Produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
 
-### Historical water
+### 10.2. Tài liệu phương pháp
 
-JRC Global Surface Water occurrence v1.5 through 2024, tile occurrence_100E_20N_v1_5_2024.tif.
+- Otsu (1979), chọn ngưỡng: [DOI: 10.1109/TSMC.1979.4310076](https://doi.org/10.1109/TSMC.1979.4310076).
+- Breiman (2001), Random Forests: [bài báo](https://www.stat.berkeley.edu/~breiman/randomforest2001.pdf).
+- Pekel và cộng sự (2016), bản đồ nước mặt dài hạn: [DOI: 10.1038/nature20584](https://doi.org/10.1038/nature20584).
+- Ayzel và cộng sự (2019), tham khảo đánh giá dự báo mưa: [DOI: 10.5194/gmd-12-1387-2019](https://doi.org/10.5194/gmd-12-1387-2019).
+- Pulkkinen và cộng sự (2019), Pysteps: [DOI: 10.5194/gmd-12-4185-2019](https://doi.org/10.5194/gmd-12-4185-2019).
 
-https://global-surface-water.appspot.com/download
+Các công trình là cơ sở phương pháp, không cung cấp chỉ số thay cho SARWatch. Nghiên cứu chưa triển khai FSS/Brier và không suy ra kỹ năng dự báo 5/12 giờ từ các bài báo dự báo ngắn hạn.
 
-Exploratory exclusion: occurrence >=90%. Historical water is not ground truth for October 2026 flooding.
+### 10.3. Bối cảnh sự kiện và bài thi
 
-### Surface elevation
-
-Copernicus DEM GLO-30 public DSM, tile N16 E107.
-
-https://registry.opendata.aws/copernicus-dem/
-
-Slope computed at approximately 30 m in a projected CRS then aligned to NISAR. Tested cutoffs 3, 5, 10 degrees; selected exploratory cutoff 5 degrees. DSM includes vegetation/buildings and is not bare-earth terrain.
-
-### Reference imagery
-
-Optional Esri World Imagery:
-
-https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer
-
-Attribution retained; check service terms before public deployment. Reference imagery differs in acquisition time and is not flood validation. The new frontend does not request OSM or CARTO tiles.
-
-### Not yet supplied
-
-Independent inundation labels and official live-warning feeds are not included. A trained water-proxy model and its measured spatial-holdout evaluation are now included; see METHODOLOGY.md#radar-ml. The UI must not invent these values. Population and infrastructure intersections are now computed from the sources below; they are potential exposure, not verified impacts.
-
-### Bundle
-
-The real user-provided Colab export is installed at data/products/sarwatch_demo_bundle.zip and published into app/web/analysis-data.js and app/standalone/index.html. Visitors see it automatically, without an upload or Earthdata credentials. The 1,646 polygons total 9.3045 km2 of unvalidated screened candidates. Statistics are read from the export, not generated for presentation. The source ZIP was validated locally for geometry, imagery, bounds and area agreement; the four original numerical radar subsets have now been recovered and processed locally. Independent inundation labels remain unavailable.
-
-### Weather context
-
-Open-Meteo Forecast API, explicitly selecting ECMWF IFS, provides hourly precipitation at sample points around Hue. API documentation: https://open-meteo.com/en/docs/ecmwf-api . Attribution: Open-Meteo / ECMWF, CC BY 4.0. Weather is ancillary context, separate from the historical NISAR analysis, and is not a trained SARWatch flood forecast. See METHODOLOGY.md#rainfall for accumulation and verification details.
-
-### Challenge scope
-
-NASA Space Apps 2026, Dancing with the SARs: interactive NISAR surface-change analysis is the core of the application. Official page: https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/ . The official page returned 502 during review; the challenge text was reviewed on the local-event reproduction https://hackathlone.com/challenges/dancing-with-the-sars .
-
-### Exposure analysis
-
-WorldPop Global2 R2025A v1, Vietnam population counts for 2026, approximately 100 m; DOI https://doi.org/10.5258/SOTON/WP00839 , CC BY 4.0. Official API https://api.worldpop.org/v3/raster returned the geographic subset saved as data/inputs/auxiliary/worldpop_hue_2026_100m.tif. Source metadata, exact request and full attribution are retained in data/inputs/auxiliary/worldpop_provenance.json and worldpop_metadata.json. NoData is unknown, not zero people; original-cell count is allocated by intersection area in EPSG:32648.
-
-OpenStreetMap © contributors, ODbL 1.0; https://www.openstreetmap.org/copyright . Source is the official read API https://api.openstreetmap.org/api/0.6/map . Current extracts retrieved 15 November 2026 are preserved with request bounds/timestamps in data/inputs/auxiliary/osm_collection.json. They are not a historical reconstruction of October. Derived geometry in data/products/impact and app/web/impact-data.js retains OSM provenance and share-alike data attribution. See METHODOLOGY.md#exposure for coverage, deduplication, clipping and the distinction between directly intersecting and nearby facilities.
-
-### Typeface
-
-Be Vietnam Pro, sourced through Google Fonts, bundled locally under the SIL Open Font License. Full licence: app/web/fonts/OFL.txt. Font files are embedded in app/standalone/index.html for offline viewing.
-
-### Independent optical reference
-
-Copernicus Sentinel-2 L2A, tile 48QYD, S2B_48QYD_20261016_0_L2A and S2B_48QYD_20261026_0_L2A. Actual SCL TIFFs and 20 m true-colour crops were retrieved from the public sentinel-cogs archive via Element84 Earth Search: https://earth-search.aws.element84.com/v1 . Catalogue responses and source URLs are retained in data/inputs/reference. Attribution: contains modified Copernicus Sentinel data (2026). Classification and cloud/shadow handling follow the meanings documented at https://sentiwiki.copernicus.eu/web/s2-processing ; SCL is not a strict ground-truth land-cover/flood map. See METHODOLOGY.md#optical-validation for actual cross-check results, date gaps, quality exclusions and eight outside-candidate controls. No same-time validated-flood accuracy is claimed.
-
-### Recovered numerical inputs and complete rerun
-
-Four Harmony GeoTIFF subsets are now local in data/inputs/raw, with SHA-256 checksums in data/products/radar_rerun/report.json. Public DEM and JRC range-read crops, exact source URLs, extraction windows, pixel-registration conventions and timestamps are retained in data/inputs/auxiliary/*_source_crop.json. Acquisition can be repeated with dev/tools/collect_auxiliary.mjs. The DEM uses point registration, correctly converted to an outer-corner affine. The JRC v1.5 public source was retrieved after the 10 November 2026 out-of-range correction noted on its official download page.
-
-JRC map attribution: Source: EC JRC/Google. Method citation: Pekel, J.-F., Cottam, A., Gorelick, N. and Belward, A.S. (2016), High-resolution mapping of global surface water and its long-term changes, Nature 540, 418–422, doi:10.1038/nature20584. See https://global-surface-water.appspot.com/download for free-use and acknowledgement terms.
-
-Copernicus DEM GLO-30 Public is available under the licence linked from https://copernicus-dem-30m.s3.amazonaws.com/readme.html . This is a derived surface-slope product, not bare-earth elevation or a hydraulic model.
-
-Required derived-DEM acknowledgement:
-Produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
-
-### Dataset attribution
-
-WorldPop Global2 R2025A v1, Vietnam population estimates for 2026, approximately 100 m: DOI https://doi.org/10.5258/SOTON/WP00839 . WorldPop / University of Southampton and dataset authors as fully listed in data/inputs/auxiliary/worldpop_metadata.json. Licensed CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ .
-
-OpenStreetMap data © OpenStreetMap contributors, https://www.openstreetmap.org/copyright . Open Database License (ODbL) 1.0: https://opendatacommons.org/licenses/odbl/1-0/ . OSM-derived geometries and database components in the exposure products retain this attribution and share-alike data licence. Query timestamps and bounds are recorded in data/inputs/auxiliary/osm_collection.json. Current mapped objects do not establish their historical condition or present operational status.
-
-Derived population/intersection results include assumptions and missing-data indicators described in METHODOLOGY.md#exposure. No independent flood confirmation is implied.
-
-
----
+- [Bản tin cảnh báo lũ tại Huế ngày 28/10](https://kttv.gov.vn/kttv/vi-VN/1/tin-canh-bao-lu-tren-cac-song-o-thanh-pho-hue-post55756.html): bối cảnh, không chứng minh trạng thái từng vùng lúc NISAR chụp ngày 27/10.
+- [Phản ánh tại cầu Duy Tân](https://tuongtac.hue.gov.vn/phan-anh/kien-nghi-co-phuong-an-de-dong-chay-duoc-luu-thong-tai-cau-duy-tan-lan-2-a243838.html): không chuyển thành nhãn ngập theo thời điểm radar.
+- [Dancing with the SARs — NASA Space Apps 2026](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/): bài thi dự án hướng tới. Trong lần rà soát trước, trang chính không truy cập được; nội dung được đối chiếu qua [bản đăng lại](https://hackathlone.com/challenges/dancing-with-the-sars). Tác giả cần kiểm tra biểu mẫu/quy định hiện hành; tài liệu này chưa xác nhận toàn bộ điều kiện nộp bài.
 
 <a id="ai-disclosure"></a>
 
-## AI use disclosure
+## 11. Khai báo công cụ hỗ trợ
 
-OpenAI ChatGPT / Codex assisted with project planning, software implementation,
-interface copy, scientific checks, debugging and submission drafts. The project
-author is responsible for reviewing and submitting the work.
+OpenAI ChatGPT/Codex hỗ trợ lập kế hoạch, triển khai phần mềm, biên tập giao diện/tài liệu, kiểm tra phương pháp, gỡ lỗi và soạn nội dung nộp bài. Tác giả chịu trách nhiệm rà soát, diễn giải và quyết định nộp bài.
 
-No generative AI imagery is used as satellite evidence. Radar previews, optical
-reference crops and geospatial products are derived from the cited datasets.
-Maps and statistics were computed from actual files, not generated sample values.
+Ảnh radar, quang học và sản phẩm không gian được xử lý từ dữ liệu dẫn nguồn; không sử dụng ảnh tạo sinh làm bằng chứng vệ tinh. Số liệu được tính từ file thực, không phải dữ liệu mẫu tạo để trình bày. ChatGPT không cung cấp nhãn ngập thực địa.
 
-A Random Forest was trained locally using actual NISAR features and automated
-Sentinel-2 scene-classification proxy labels. Its spatially held-out results
-measure agreement with optical water labels, not confirmed flood detection or
-future rainfall accuracy. Model artifacts and evaluation protocol are included.
-ChatGPT did not supply ground-truth flood labels.
-
-Weather predictions are produced by ECMWF IFS and delivered through Open-Meteo.
-SARWatch does not claim to have trained that forecasting model.
-
-All submission text remains a draft until reviewed by the project author. Follow
-the current Project tab's AI disclosure fields and applicable event instructions.
-
-
----
+Random Forest được huấn luyện từ đặc trưng NISAR và nhãn SCL; dự báo mưa do ECMWF IFS cung cấp qua Open-Meteo. Phạm vi hỗ trợ cần được khai báo theo biểu mẫu nộp bài.
 
 <a id="submission"></a>
 
-## Submission draft and demonstration
+## Phụ lục. Giới thiệu và trình bày dự án
 
-### Title
-SARWatch AI - Prioritizing Flood Verification in Hue with NISAR
+### A. Tên và mô tả ngắn
 
-### Short description
-SARWatch turns real multi-date NISAR radar observations into an interactive
-evidence map, combines candidate changes with population and road exposure,
-and helps identify where flood verification should begin in Hue, Vietnam.
+**SARWatch — Ưu tiên kiểm chứng dấu hiệu ngập tại Huế bằng NISAR.**
 
-### Project description
-Flood responders need to decide where to investigate when information is
-incomplete. SARWatch AI explores this problem in Hue using NASA-ISRO NISAR
-observations from 15 and 27 October 2026.
+SARWatch kết hợp radar NISAR nhiều thời điểm, tham chiếu Sentinel-2 và dân số–hạ tầng để giúp xác định nơi cần kiểm chứng. Mỗi vùng có thể truy nguyên ảnh, điều kiện xử lý, mức đối chiếu và giới hạn dữ liệu. Chưa có cơ sở khẳng định đã được đơn vị ứng phó áp dụng thực tế.
 
-Our interactive web application compares HH/HV backscatter, shows before/after
-imagery, and publishes 1,646 screened new-water candidates from a real analysis
-export. It joins those candidates to WorldPop population counts and mapped
-OpenStreetMap infrastructure, then orders locations using explicit exposure
-criteria rather than an unexplained risk score. Viewers can inspect individual
-regions, compare optical reference imagery and export a verification checklist.
+### B. Trình tự minh họa
 
-We recovered all four numerical radar subsets and implemented a reproducible
-local processing pipeline with quality masks, power-domain speckle smoothing,
-adaptive thresholding and parameter sensitivity. A CPU-trained Random Forest
-achieves F1 0.8825 versus 0.8560 for Otsu on 100,000 held-out pixels from 68
-spatial blocks. These results measure agreement with automated Sentinel-2
-open-water proxy labels, not validated flood detection.
+1. Mở bản đồ, chỉ ngày chụp và phạm vi phân tích.
+2. Chọn vị trí trong danh sách ưu tiên.
+3. So sánh radar trước/sau và ảnh Sentinel-2 tương ứng.
+4. Giải thích trạng thái đối chiếu, độ phủ dân số và lý do xếp thứ tự.
+5. Xuất danh sách kiểm chứng; kết thúc bằng giới hạn khoa học chính.
 
-The cross-check matters as much as the detection. Only nine original candidate
-regions intersect any new optical-water signal; 703 lack clear reference under
-our conservative protocol. We expose those limitations alongside processing-
-maturity differences and acquisition-time gaps. Potential population exposure
-is approximately 1,681 modelled persons on valid cells covering 60.5% of the
-candidate area; 18.689 km of mapped road centreline intersects the candidates.
-Neither number is a confirmed impact count.
+Quay thao tác thật, không thêm cảnh ngập tạo sinh hoặc dùng ảnh nền như ảnh đúng ngày sự kiện. Khi nêu kết quả, phân biệt diện tích ứng viên, mức khớp nhãn nước và phơi nhiễm từng phần với ngập/thiệt hại xác nhận. Thời lượng và định dạng theo biểu mẫu nộp bài.
 
-The contribution is an auditable path from NASA observations to locations for
-further investigation. The application works offline for its historical case,
-uses three navigation views, and keeps optional ECMWF rainfall context separate
-from the radar evidence. It is an analytical prototype, not an operational
-warning or evacuation system.
+### C. Gợi ý bảy trang trình chiếu
 
-### Relationship to Dancing with the SARs
-NISAR is the primary analytical input, not a decorative layer. The app lets
-users explore radar-observed surface change, consider physical explanations
-and limitations, and combine NASA observations with supplementary geospatial
-context. See README and SCIENCE_REPORT for traceable outputs.
+| Trang | Nội dung |
+|---|---|
+| 1 | Vấn đề tại Huế và người dùng dự kiến |
+| 2 | Nguồn NISAR, thời điểm và phạm vi dữ liệu |
+| 3 | Quy trình radar và độ nhạy tham số |
+| 4 | Đối chiếu quang học, kể cả phần thiếu bằng chứng |
+| 5 | Random Forest, cách chia tập và so sánh Otsu |
+| 6 | Phơi nhiễm, thứ tự kiểm chứng và giao diện |
+| 7 | Giới hạn, hướng phát triển, nguồn và khai báo công cụ |
 
-### Innovation and impact
-The emphasis is on verification decisions: each candidate has interpretable
-exposure fields, optical-reference status and a downloadable location record.
-The prototype makes missing evidence visible and avoids equating radar change
-with confirmed inundation. Potential users include researchers and local
-disaster-analysis teams; no partner adoption or field deployment is claimed.
-
-### Demonstration script: approximately 30 seconds
-In Hue, satellite change becomes useful when we know where to investigate.
-SARWatch compares real NISAR observations, maps potential new water, and ranks
-locations by population and road exposure. Select a region to compare radar
-and Sentinel-2 evidence, then export a verification checklist. Our reproducible
-Random Forest improves optical-water agreement over a baseline. We show missing
-coverage and uncertainty because these are investigation priorities, not
-confirmed emergency warnings.
-
-### Suggested demonstration capture
-1. Open the map and show the observation dates and analysis footprint.
-2. Select a high-exposure region from the priority list.
-3. Compare before/after radar and the actual optical reference for that region.
-4. Show reference status, partial population coverage and checklist export.
-5. Briefly show the measured RF-versus-baseline panel under Về dữ liệu.
-
-Record actual application interaction. Do not add generated floods or present
-the reference basemap as an event-dated image. The script is a draft; use the
-current Project tab's required duration/format and final field limits.
-
-### Seven-slide fallback outline
-1. Hue: the decision problem and intended users.
-2. Actual NISAR granules, dates, coverage and processing maturities.
-3. Reproducible radar-change method and parameter sensitivity.
-4. Independent-source comparison, including weak agreement and missing coverage.
-5. Trained water-proxy model, spatial holdout and baseline comparison.
-6. Population/roads and the interactive verification workflow.
-7. Limitations, next validation milestone, sources and AI disclosure.
-
-### Resources and disclosure
-Copy the relevant original links from METHODOLOGY.md#sources, including NASA NISAR,
-Copernicus Sentinel-2, WorldPop and OpenStreetMap. Original code: Apache 2.0;
-data/font terms: NOTICE. Disclose ChatGPT/Codex assistance using METHODOLOGY.md#ai-disclosure.
-Do not describe proxy-water F1 as flood accuracy or provider rainfall as a
-SARWatch-trained forecast.
-
-### Final submission actions for the author
-- Review the current 2026 Project tab and HCMC online instructions.
-- Confirm team/event registration and all required fields.
-- Publish the prepared web files/repository to an account you control and test
-  the links signed out; this folder alone is not a public URL.
-- Attach the actual recorded demo or permitted presentation and cite sources.
-- Complete submission and check its final submitted status before the deadline.
-
-No project has been submitted or externally published by this preparation step.
-Judging results cannot be promised.
+Trước khi nộp, kiểm tra đăng ký đội/sự kiện, trường bắt buộc, link repo/demo ở chế độ không đăng nhập, nguồn, khai báo công cụ, thời hạn và trạng thái nộp cuối cùng. Việc chuẩn bị tài liệu không đồng nghĩa đã nộp bài hoặc bảo đảm kết quả chấm giải.
